@@ -15,9 +15,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
         const options = { maxAge: expiresIn, httpOnly: true, secure: true, path: '/' };
 
         cookies.set('__session', cookie, options);
-
+        console.log('set cookie');
         return json({ status: 'signedIn' });
     } else {
+        console.error('Recent sign in required!');
         throw error(401, 'Recent sign in required!');
     }
 

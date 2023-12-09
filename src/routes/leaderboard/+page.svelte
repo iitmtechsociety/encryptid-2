@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type {PageData} from './$types';
+  import { SignedOut } from 'sveltefire';
+import type {PageData} from './$types';
     export let data: PageData;
     import {Trophy,Medal} from 'lucide-svelte';
     
@@ -7,6 +8,9 @@
 </script>
 <div class="max-w-screen">
   <center>
+    <SignedOut>
+      <span class="font-bold text-5xl">Leaderboard</span>
+    </SignedOut>
 <div class="lg:max-w-5xl mt-10">
   
       <table class="table table-lg">

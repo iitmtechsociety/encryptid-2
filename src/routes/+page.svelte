@@ -39,7 +39,7 @@
 </div>
 <SignedIn>
   <script>
-    window.location.href = '/decrypt';
+    window.location.href = '/registration';
   </script>
 </SignedIn>
 

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types";
 import { adminAuth,adminDB } from "$lib/server/admin";
-import { redirect } from "@sveltejs/kit";
+import { goto } from "$app/navigation";
 
 export const load = (async ({cookies}) => {
     const sessionCookie = cookies.get('__session');
@@ -17,14 +17,14 @@ export const load = (async ({cookies}) => {
                 
                 }
               } else {
-                redirect(301,'/onboarding');
+                goto('/registration');
               }
         } else {
-            redirect(301,'/onboarding');
+            goto('/registration');
         }
        
     } catch (err) {
         console.error(err);
-        redirect(301,'/registration');
+        goto('/registration');
     }
 }) satisfies PageServerLoad;

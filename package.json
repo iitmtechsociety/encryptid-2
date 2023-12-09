@@ -37,6 +37,7 @@
 		"firebase-admin": "^12.0.0",
 		"lucide-svelte": "^0.294.0",
 		"svelte-countdown": "^1.1.2",
+		"svelte-toasts": "^1.1.2",
 		"sveltefire": "^0.4.2"
 	}
 }
