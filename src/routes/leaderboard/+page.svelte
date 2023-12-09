@@ -1,16 +1,27 @@
 <script lang="ts">
-  import { SignedOut } from 'sveltefire';
-import type {PageData} from './$types';
-    export let data: PageData;
-    import {Trophy,Medal} from 'lucide-svelte';
-    
-  let counter = 0;
+  import { SignedOut,SignedIn,Doc } from 'sveltefire';
+  let lb: any[] = [];
+  onMount
+  import {Trophy,Medal} from 'lucide-svelte';
+	import { onMount } from 'svelte';
+  onMount(async () => {
+    const res = await fetch(`/api/leaderboard/`);
+    const {leaderboard} = await res.json();
+    lb = leaderboard;
+  });
 </script>
 <div class="max-w-screen">
   <center>
     <SignedOut>
       <span class="font-bold text-5xl">Leaderboard</span>
     </SignedOut>
+    <SignedIn let:user>
+      <Doc ref={`users/${user.uid}`} let:data>
+        {#if data.leaderboardPosition !== null}
+        <span class="font-bold text-5xl">#{data.leaderboardPosition}</span>
+        {/if}
+      </Doc>
+    </SignedIn>
 <div class="lg:max-w-5xl mt-10">
   
       <table class="table table-lg">
@@ -24,7 +35,7 @@ import type {PageData} from './$types';
           </tr>
         </thead>
         <tbody>
-            {#each data.leaderboard as userEntry, index}
+            {#each lb as userEntry, index}
       
             <tr class="text-md">
               <td class="flex max-w-fit">

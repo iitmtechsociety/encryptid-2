@@ -5,12 +5,39 @@
       import {toasts} from 'svelte-toasts';
       export let data: PageData;
       import { auth } from "$lib/firebase";
-	import { SignedOut,SignedIn } from "sveltefire";
+	import { SignedOut,SignedIn, userStore } from "sveltefire";
 	import { goto } from "$app/navigation";
       let noRedirections: Boolean = false;
       async function signInWithGoogle() {
         const provider = new GoogleAuthProvider();
-        const credential = await signInWithPopup(auth, provider);
+        let credential;
+        try{
+          credential = await signInWithPopup(auth, provider);
+        } catch (fbE: FirebaseError){
+          if(fbE.code === 'auth/internal-error'){
+            toasts.add({
+              title: "Registration Failed!",
+              description: 'Something went wrong. Are you using a valid IITM Email?',
+              duration: 10000,
+              type: 'error',
+              theme: 'dark',
+              showProgress: true,
+            });
+          }
+          // if(fbE.status === "INVALID_ARGUMENT"){
+          //   toasts.add({
+          //     title: "Invalid Email",
+          //     description: 'Please use your IITM Email to login',
+          //     duration: 10000,
+          //     type: 'error',
+          //     theme: 'dark',
+          //     showProgress: true,
+          //   });
+            
+          // }
+          return;
+        }
+        console.log(credential);
         const idToken = await credential.user.getIdToken();
         const res = await fetch("/api/signin",{
           method: "POST",
@@ -65,6 +92,7 @@
         if(username.length >= 3 && username.length <= 20) errorMessage = "";
         }
       import {AlertTriangle} from 'lucide-svelte';
+	import type { FirebaseError } from "firebase/app";
       const completeRegistration = async () => {
         busy = true;
           const r = await fetch("/api/create_user",{
@@ -90,7 +118,12 @@
         //   // window.location.href = `/onboarding/${username}/2`;
         // }, 5000);
       }
-      onMount(redirectIfNeeded);
+      onMount(()=>{
+        const user = userStore(auth)
+        if(user !== null){
+          redirectIfNeeded();
+        }
+      });
 </script>
 
   <SignedIn>

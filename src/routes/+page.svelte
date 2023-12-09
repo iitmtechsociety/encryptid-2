@@ -1,11 +1,21 @@
 <script lang="ts">
+    //@ts-ignore
     import Countdown from 'svelte-countdown/src/index.js';
-    import {SignedIn} from 'sveltefire';
-
+    import {userStore} from 'sveltefire';
+    import {auth} from '$lib/firebase';
+    import { goto } from '$app/navigation';
+    import {onMount} from 'svelte';
+    onMount(() => {
+      const user = userStore(auth);
+      if(user){
+        goto('/registration');
+      }
+    });
 </script>
 
 <div class="hero h-screen">
     <div class="hero-content">
+      
       <Countdown from="2024-01-01 09:30:00" dateFormat="YYYY-MM-DD H:m:s" zone="Asia/Kolkata" let:remaining>
         <div class="grid grid-flow-col gap-5 text-center auto-cols-max">
 
@@ -37,9 +47,5 @@
 </Countdown>
     </div>
 </div>
-<SignedIn>
-  <script>
-    window.location.href = '/registration';
-  </script>
-</SignedIn>
+
 

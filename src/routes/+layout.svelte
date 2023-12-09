@@ -34,6 +34,7 @@
         class="btn btn-primary text-xs btn-ghost"
         on:click={() => {
           const modal = document.getElementById("profile_modal");
+          //@ts-ignore
           modal.showModal();
         }}
         >
@@ -93,11 +94,11 @@
                 </a>
               </li>
               <li>
-                <a href="/leaderboard" class:active={$page.route.id?.match(/leaderboard/g)}>
+                <a href="/leaderboard" class:active={$page.route.id?.match(/leaderboard/g)} data-sveltekit-preload-data="hover">
                   <Trophy size="15px"/>
                   Leaderboard
                   {#if data.leaderboardPosition !== null}
-                    <span class="badge badge-sm badge-warning">{data.leaderboardPosition}</span>
+                    <span class="badge badge-sm badge-warning"># {data.leaderboardPosition}</span>
                   {/if}
                 </a>
               </li>
