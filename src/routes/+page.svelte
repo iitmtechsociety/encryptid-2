@@ -1,5 +1,7 @@
 <script lang="ts">
     import Countdown from 'svelte-countdown/src/index.js';
+    import {SignedIn} from 'sveltefire';
+
 </script>
 
 <div class="hero h-screen">
@@ -35,4 +37,9 @@
 </Countdown>
     </div>
 </div>
+<SignedIn>
+  <script>
+    window.location.href = '/decrypt';
+  </script>
+</SignedIn>
 
