@@ -63,8 +63,8 @@
           </div>
         </dialog>
         
-        {#if data.isAdmin === true}
-        <button class="btn btn-secondary btn-outline mr-4">
+        {#if data.isAdmin === true && !$page.route.id?.match(/admin/g)}
+        <button class="btn btn-secondary btn-outline mr-4" on:click={()=>goto('/admin')}>
           <ShieldBan size="15px"/>
           Admin Panel
         </button>

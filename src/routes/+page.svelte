@@ -7,7 +7,7 @@
     import {onMount} from 'svelte';
     onMount(() => {
       const user = userStore(auth);
-      if(user){
+      if(user === undefined){
         goto('/registration');
       }
     });

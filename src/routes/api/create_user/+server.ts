@@ -44,6 +44,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 usernames: FieldValue.arrayUnion(username),
                 userIds: FieldValue.arrayUnion(uid),
             });
+            t.update(adminDB.collection('index').doc('metrics'),{
+                "userCount": FieldValue.increment(1),
+                "usersByLevel.1": FieldValue.increment(1),
+            });
         });
         
     

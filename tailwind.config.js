@@ -7,7 +7,12 @@ export default {
   daisyui: {
     base: true,
     styled: true,
-    themes: ["light", "dark", "cyberpunk", "dim"],
+    themes: [{
+      cyberpunk: {
+        ...require('daisyui/src/theming/themes')['cyberpunk'],
+       "base-100": "#171212"
+      }
+    }],
   },
   plugins: [require("daisyui")],
 }
