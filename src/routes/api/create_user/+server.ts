@@ -39,6 +39,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 accountCreated: FieldValue.serverTimestamp(),
                 level: 1,
                 isAdmin: false,
+                logs: []
             });
             t.update(usernameIndexRef, {
                 usernames: FieldValue.arrayUnion(username),

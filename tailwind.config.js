@@ -10,7 +10,7 @@ export default {
     themes: [{
       cyberpunk: {
         ...require('daisyui/src/theming/themes')['cyberpunk'],
-       "base-100": "#171212"
+      //  "base-100": "#171212"
       }
     }],
   },

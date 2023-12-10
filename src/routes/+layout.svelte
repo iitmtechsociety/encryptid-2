@@ -59,6 +59,9 @@
                 </div>
                 <input type="text" value={user.email} class="input input-bordered w-full max-w-xs" disabled/>
               </label>
+              <button
+               class="btn btn-error btn-outline text-lg mt-6"
+                    on:click={()=>signOutSSR()}>Log Out</button>
             </center>
           </div>
         </dialog>
@@ -70,9 +73,7 @@
         </button>
         {/if}
       </Doc>
-        <button
-        class="btn btn-error btn-outline text-lg"
-         on:click={()=>signOutSSR()}>Log Out</button>
+        
         </SignedIn>
         <SignedOut>
             {#if !$page.route.id?.match(/registration/g)}
