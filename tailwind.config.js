@@ -7,12 +7,15 @@ export default {
   daisyui: {
     base: true,
     styled: true,
-    themes: [{
-      cyberpunk: {
-        ...require('daisyui/src/theming/themes')['cyberpunk'],
-      //  "base-100": "#171212"
-      }
-    }],
+    themes: [
+      //   {
+      //   cyberpunk: {
+      //     // ...require('daisyui/src/theming/themes')['cyberpunk'],
+      //   //  "base-100": "#171212"
+      //   }
+      // }
+      "cyberpunk", "forest", "dim"
+    ],
   },
   plugins: [require("daisyui")],
 }
