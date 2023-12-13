@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { PlusIcon, EyeOff, Eye, Pencil, Delete, Trash, List } from 'lucide-svelte';
+	import { toasts } from 'svelte-toasts';
 	import { Collection } from 'sveltefire';
 	let showAnswers = false;
 
@@ -7,6 +8,56 @@
 		const r = await fetch(`/api/question/${id}`, {
 			method: 'DELETE'
 		});
+	}
+
+	let levelModalDataId = '';
+	let levelModalDataTitle = '';
+	let levelModalDataQuestion = '';
+	let levelModalDataAnswer = '';
+	let levelModalDataCodeComment = '';
+
+	async function updateCurrentQuestion() {
+		const r = await fetch(`/api/question/${levelModalDataId}`, {
+			method: 'PUT',
+			body: JSON.stringify({
+				title: levelModalDataTitle
+			})
+		});
+		if (r.status == 200) {
+			toasts.add({
+				title: 'Success',
+				description: 'Question updated successfully',
+				type: 'success'
+			});
+		} else {
+			toasts.add({
+				title: 'Error',
+				description: 'Question could not be updated',
+				type: 'error'
+			});
+		}
+	}
+
+	async function createCurrentQuestion() {
+		const r = await fetch(`/api/question`, {
+			method: 'POST',
+			body: JSON.stringify({
+				title: levelModalDataTitle
+			})
+		});
+		if (r.status == 200) {
+			toasts.add({
+				title: 'Success',
+				description: 'Question created successfully',
+				type: 'success'
+			});
+		} else {
+			toasts.add({
+				title: 'Error',
+				description: 'Question could not be created',
+				type: 'error'
+			});
+		}
 	}
 </script>
 
@@ -19,15 +70,58 @@
 </button>
 <dialog id="new_level_modal" class="modal">
 	<div class="modal-box">
-		<h3 class="font-bold text-lg">Hello!</h3>
-		<p class="py-4">Press ESC key or click the button below to close</p>
-		<div class="modal-action">
-			<form method="dialog">
-				<!-- if there is a button in form, it will close the modal -->
-				<button class="btn">Cancel</button>
-				<button class="btn btn-secondary">Confirm</button>
-			</form>
-		</div>
+		<h3 class="font-bold text-lg">New Level</h3>
+		<label class="form-control w-full max-w-xs">
+			<div class="label">
+				<span class="label-text">Title</span>
+			</div>
+			<input
+				type="text"
+				bind:value={levelModalDataTitle}
+				class="input input-bordered w-full max-w-xs"
+				disabled
+			/>
+			<div class="label">
+				<span class="label-text">Title</span>
+			</div>
+			<input
+				type="text"
+				bind:value={levelModalDataQuestion}
+				class="input input-bordered w-full max-w-xs"
+				disabled
+			/>
+			<!-- TODO  -->
+			<div class="label">
+				<span class="label-text">Answer</span>
+			</div>
+			<input
+				type="text"
+				bind:value={levelModalDataAnswer}
+				class="input input-bordered w-full max-w-xs"
+				disabled
+			/>
+			<label class="form-control w-full max-w-xs">
+				<div class="label">
+					<span class="label-text">Choose Images</span>
+				</div>
+				<input
+					type="file"
+					class="file-input file-input-bordered w-full max-w-xs"
+					on:change={(e) => console.log(e)}
+				/>
+				<div class="label">
+					<span class="label-text-alt">Max 1MB/image</span>
+				</div>
+
+				<div class="modal-action">
+					<form method="dialog">
+						<!-- if there is a button in form, it will close the modal -->
+						<button class="btn">Cancel</button>
+						<button class="btn btn-primary">Create</button>
+					</form>
+				</div>
+			</label>
+		</label>
 	</div>
 </dialog>
 
@@ -46,10 +140,29 @@
 	{/if}
 </button>
 
-<button class="btn btn-outline btn-accent">
+<button
+	class="btn btn-outline btn-accent"
+	on:click={() => {
+		document.getElementById('reorder_modal').showModal();
+	}}
+>
 	<List />
 	Reorder Levels
 </button>
+
+<dialog class="modal" id="reorder_modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg">Reorder Elements</h3>
+		<p class="py-4">Press ESC key or click the button below to close</p>
+
+		<div class="modal-action">
+			<form method="dialog">
+				<button class="btn"> Cancel </button>
+				<button class="btn btn-primary"> Save </button>
+			</form>
+		</div>
+	</div>
+</dialog>
 
 <br />
 
@@ -142,7 +255,9 @@
 							<!-- if there is a button in form, it will close the modal -->
 
 							<button class="btn">Cancel</button>
-							<button class="btn btn-error" on:click={() => console.log('DELETE')}>Delete</button>
+							<button class="btn btn-error" on:click={() => deleteQuestion(level.levelId)}
+								>Delete</button
+							>
 						</form>
 					</div>
 				</div>
