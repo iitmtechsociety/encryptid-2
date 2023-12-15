@@ -2,18 +2,35 @@
 	import { PlusIcon, EyeOff, Eye, Pencil, Delete, Trash, List } from 'lucide-svelte';
 	import { toasts } from 'svelte-toasts';
 	import { Collection } from 'sveltefire';
+	import { storage } from '$lib/firebase';
+	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 	let showAnswers = false;
 
 	async function deleteQuestion(id: string) {
-		const r = await fetch(`/api/question/${id}`, {
+		const r = await fetch(`/api/levels/${id}`, {
 			method: 'DELETE'
 		});
+		if (r.status == 200) {
+			toasts.add({
+				title: 'Success',
+				description: 'Question deleted successfully',
+				type: 'success'
+			});
+		} else {
+			toasts.add({
+				title: 'Error',
+				description: 'Question could not be deleted',
+				type: 'error'
+			});
+		}
 	}
 
 	let levelModalDataId = '';
 	let levelModalDataTitle = '';
 	let levelModalDataQuestion = '';
 	let levelModalDataAnswer = '';
+	let levelModalDataFiles = [];
+	let levelModalDataImages = [];
 	let levelModalDataCodeComment = '';
 
 	async function updateCurrentQuestion() {
@@ -39,10 +56,57 @@
 	}
 
 	async function createCurrentQuestion() {
-		const r = await fetch(`/api/question`, {
+		let fileIndex = 0;
+		const files = [];
+		files.forEach(async () => {
+			let fileData = {};
+			const file = files[fileIndex];
+			fileData['index'] = fileIndex;
+			const path = `levels/${docUUID}/files/${fileIndex}.${file.name.split('.')[-1]}`;
+			fileData['path'] = path;
+			const storageRef = ref(storage, path);
+
+			try {
+				await uploadBytes(storageRef, file);
+				const dl_url = await getDownloadURL(storageRef);
+				fileData['url'] = dl_url;
+				files.push(fileData);
+				fileIndex++;
+			} catch (e) {
+				console.log(e);
+				return;
+			}
+		});
+		let imageIndex = 0;
+		const images = [];
+		images.forEach(async () => {
+			let imageData = {};
+			const image = images[imageIndex];
+			imageData['index'] = imageIndex;
+			const path = `levels/${docUUID}/images/${imageIndex}`;
+			imageData['path'] = path;
+			const storageRef = ref(storage, path);
+
+			try {
+				await uploadBytes(storageRef, image);
+				const dl_url = await getDownloadURL(storageRef);
+				imageData['url'] = dl_url;
+				images.push(imageData);
+				imageIndex++;
+			} catch (e) {
+				console.log(e);
+				return;
+			}
+		});
+		const r = await fetch(`/api/levels`, {
 			method: 'POST',
 			body: JSON.stringify({
-				title: levelModalDataTitle
+				answer: levelModalDataAnswer,
+				code_comment: levelModalDataCodeComment,
+				files: files,
+				images: images,
+				title: levelModalDataTitle,
+				question: levelModalDataQuestion
 			})
 		});
 		if (r.status == 200) {
@@ -63,7 +127,15 @@
 
 <button
 	class="btn btn-secondary"
-	on:click={() => document.getElementById('new_level_modal').showModal()}
+	on:click={() => {
+		levelModalDataAnswer = '';
+		levelModalDataCodeComment = '';
+		levelModalDataFiles = [];
+		levelModalDataImages = [];
+		levelModalDataQuestion = '';
+		levelModalDataTitle = '';
+		document.getElementById('new_level_modal').showModal();
+	}}
 >
 	<PlusIcon />
 	Add New Level
@@ -78,49 +150,59 @@
 			<input
 				type="text"
 				bind:value={levelModalDataTitle}
+				placeholder="Title"
 				class="input input-bordered w-full max-w-xs"
-				disabled
 			/>
 			<div class="label">
-				<span class="label-text">Title</span>
+				<span class="label-text">Prompt</span>
 			</div>
 			<input
 				type="text"
 				bind:value={levelModalDataQuestion}
+				placeholder="Prompt"
 				class="input input-bordered w-full max-w-xs"
-				disabled
 			/>
 			<!-- TODO  -->
+
+			<div class="label">
+				<span class="label-text">Choose Files</span>
+			</div>
+			<input
+				type="file"
+				class="file-input file-input-bordered w-full max-w-xs"
+				multiple
+				bind:files={levelModalDataFiles}
+			/>
+			<div class="label">
+				<span class="label-text">Choose Images</span>
+			</div>
+			<input
+				type="file"
+				class="file-input file-input-bordered w-full max-w-xs"
+				multiple
+				bind:files={levelModalDataImages}
+				accept="image/*"
+			/>
 			<div class="label">
 				<span class="label-text">Answer</span>
 			</div>
 			<input
 				type="text"
 				bind:value={levelModalDataAnswer}
+				placeholder="Answer"
 				class="input input-bordered w-full max-w-xs"
-				disabled
 			/>
-			<label class="form-control w-full max-w-xs">
-				<div class="label">
-					<span class="label-text">Choose Images</span>
-				</div>
-				<input
-					type="file"
-					class="file-input file-input-bordered w-full max-w-xs"
-					on:change={(e) => console.log(e)}
-				/>
-				<div class="label">
-					<span class="label-text-alt">Max 1MB/image</span>
-				</div>
-
-				<div class="modal-action">
-					<form method="dialog">
-						<!-- if there is a button in form, it will close the modal -->
-						<button class="btn">Cancel</button>
-						<button class="btn btn-primary">Create</button>
-					</form>
-				</div>
-			</label>
+			<div class="label">
+				<span class="label-text">Code Comment</span>
+			</div>
+			<textarea class="textarea textarea-bordered" placeholder="Code Comment"></textarea>
+			<div class="modal-action">
+				<form method="dialog">
+					<!-- if there is a button in form, it will close the modal -->
+					<button class="btn">Cancel</button>
+					<button class="btn btn-primary" on:click={createCurrentQuestion}>Create</button>
+				</form>
+			</div>
 		</label>
 	</div>
 </dialog>

@@ -20,3 +20,13 @@ try {
 
 export const adminDB = getFirestore();
 export const adminAuth = getAuth();
+
+export const isCookieValid = async (cookie) => {
+    try {
+        const user = await adminAuth.verifySessionCookie(cookie, true);
+        return user;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
