@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ()=>{
             leaderboard: leaderboard,
         });
     }
-    if(leaderboard.length === 0){
+    if(!snapshotSetup){
         console.log('leaderboard not loaded yet. loading....');
         const docRef = await adminDB.collection('index').doc('leaderboard');
         const doc = await docRef.get();
