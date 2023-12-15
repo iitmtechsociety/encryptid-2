@@ -13,10 +13,10 @@
 		});
 		goto('/');
 	}
-	import { Key, Trophy, CircleUser, ChevronRight, ShieldBan, Lock } from 'lucide-svelte';
+	import { Key, Trophy, ShieldBan } from 'lucide-svelte';
 </script>
 
-<ToastContainer placement="top-left" let:data>
+<ToastContainer placement="top-right" let:data>
 	<FlatToast {data} />
 	<!-- Provider template for your toasts -->
 </ToastContainer>
@@ -43,11 +43,11 @@
 							alt="Profile Photograph"
 							src={user.photoURL ||
 								'https://png.pngtree.com/png-clipart/20220904/ourmid/pngtree-human-profile-avatar-ui-button-3d-icon-render-png-image_6137257.png'}
-							height="30px"
-							width="30px"
+							height="40px"
+							width="40px"
 						/>
 
-						{data.username}</button
+						<span class="text-lg">{data.username}</span></button
 					>
 					<!-- You can open the modal using ID.showModal() method -->
 					<dialog id="profile_modal" class="modal">

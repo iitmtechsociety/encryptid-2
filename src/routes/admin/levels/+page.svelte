@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { PlusIcon, EyeOff, Eye, Pencil, Delete, Trash, List } from 'lucide-svelte';
-	import { toasts } from 'svelte-toasts';
 	import { Collection } from 'sveltefire';
 	import { storage } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+	import { sendErrorToast, sendSuccessToast } from '$lib/utils';
+	import { uuidv4 as v4 } from 'uuid';
 	let showAnswers = false;
 
 	async function deleteQuestion(id: string) {
@@ -11,17 +12,9 @@
 			method: 'DELETE'
 		});
 		if (r.status == 200) {
-			toasts.add({
-				title: 'Success',
-				description: 'Question deleted successfully',
-				type: 'success'
-			});
+			sendSuccessToast('Success', 'Question deleted successfully');
 		} else {
-			toasts.add({
-				title: 'Error',
-				description: 'Question could not be deleted',
-				type: 'error'
-			});
+			sendErrorToast('Error', 'Something went wrong');
 		}
 	}
 
@@ -41,23 +34,17 @@
 			})
 		});
 		if (r.status == 200) {
-			toasts.add({
-				title: 'Success',
-				description: 'Question updated successfully',
-				type: 'success'
-			});
+			sendSuccessToast('Success', 'Question updated successfully');
 		} else {
-			toasts.add({
-				title: 'Error',
-				description: 'Question could not be updated',
-				type: 'error'
-			});
+			sendErrorToast('Error', 'Something went wrong');
 		}
 	}
 
 	async function createCurrentQuestion() {
 		let fileIndex = 0;
-		const files = [];
+		const files: any[] = [];
+		const docUUID = v4();
+		levelModalDataId = docUUID;
 		files.forEach(async () => {
 			let fileData = {};
 			const file = files[fileIndex];
@@ -106,21 +93,14 @@
 				files: files,
 				images: images,
 				title: levelModalDataTitle,
-				question: levelModalDataQuestion
+				question: levelModalDataQuestion,
+				id: docUUID
 			})
 		});
 		if (r.status == 200) {
-			toasts.add({
-				title: 'Success',
-				description: 'Question created successfully',
-				type: 'success'
-			});
+			sendSuccessToast('Success', 'Question created successfully');
 		} else {
-			toasts.add({
-				title: 'Error',
-				description: 'Question could not be created',
-				type: 'error'
-			});
+			sendErrorToast('Error', 'Something went wrong');
 		}
 	}
 </script>
@@ -128,6 +108,7 @@
 <button
 	class="btn btn-secondary"
 	on:click={() => {
+		levelModalDataId = '';
 		levelModalDataAnswer = '';
 		levelModalDataCodeComment = '';
 		levelModalDataFiles = [];

@@ -11,17 +11,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     if (sessionCookie === undefined) throw error(401, 'Unauthorized');
     try {
         const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie);
-        const uid = decodedClaims.uid;
         const data = await request.json();
         data['levelIndex'] = nextIndex;
-        adminDB.runTransaction(async (t) => {
+
+        await adminDB.runTransaction(async (t) => {
             if (nextIndex === -1) nextIndex = (await adminDB.collection('levels').count().get()).data().count;
-            t.get(adminDB.collection('users').doc(uid)).then((doc) => {
-                if (!doc.exists) throw error(401, 'Unauthorized');
-                if (!doc.data()!.isAdmin) throw error(403, 'Forbidden');
-            });
+            
             try {
-                const newLevelRef = adminDB.collection('levels').doc();
+                const newLevelRef = adminDB.collection('levels').doc(data.id);
                 data['levelId'] = newLevelRef.id;
                 t.create(newLevelRef, data);
                 nextIndex++;

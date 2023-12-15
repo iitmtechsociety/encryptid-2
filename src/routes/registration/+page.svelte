@@ -2,7 +2,7 @@
 	import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-	import { toasts } from 'svelte-toasts';
+	import { sendErrorToast } from '$lib/utils';
 	export let data: PageData;
 	import { auth } from '$lib/firebase';
 	import { SignedOut, SignedIn, userStore } from 'sveltefire';
@@ -15,26 +15,11 @@
 			credential = await signInWithPopup(auth, provider);
 		} catch (fbE: FirebaseError) {
 			if (fbE.code === 'auth/internal-error') {
-				toasts.add({
-					title: 'Registration Failed!',
-					description: 'Something went wrong. Are you using a valid IITM Email?',
-					duration: 10000,
-					type: 'error',
-					theme: 'dark',
-					showProgress: true
-				});
+				sendErrorToast(
+					'Registration Failed!',
+					'Something went wrong. Are you using a valid IITM Email?'
+				);
 			}
-			// if(fbE.status === "INVALID_ARGUMENT"){
-			//   toasts.add({
-			//     title: "Invalid Email",
-			//     description: 'Please use your IITM Email to login',
-			//     duration: 10000,
-			//     type: 'error',
-			//     theme: 'dark',
-			//     showProgress: true,
-			//   });
-
-			// }
 			return;
 		}
 		console.log(credential);
@@ -47,14 +32,7 @@
 			body: JSON.stringify({ idToken })
 		});
 		if (res.status !== 200) {
-			toasts.add({
-				title: 'Registration Failed!',
-				description: 'Something went wrong. Please try again.',
-				duration: 10000,
-				type: 'error',
-				theme: 'dark',
-				showProgress: true
-			});
+			sendErrorToast('Registration Failed!', 'Something went wrong. Please try again.');
 		} else {
 			redirectIfNeeded();
 		}
