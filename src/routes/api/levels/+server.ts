@@ -11,19 +11,24 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     if (sessionCookie === undefined) throw error(401, 'Unauthorized');
     try {
         const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie);
+        const uid = decodedClaims.uid;
+        const userRef = await adminDB.collection('users').doc(uid);
+        const userDoc = await userRef.get();
+        const userData = userDoc.data();
+        if (userData === undefined) throw error(401, 'Unauthorized');
+        if (userData.isAmin !== true) throw error(403, 'Forbidden');
         const data = await request.json();
         data['levelIndex'] = nextIndex;
 
         await adminDB.runTransaction(async (t) => {
-            if (nextIndex === -1) nextIndex = (await adminDB.collection('levels').count().get()).data().count;
-            
+            if (nextIndex === -1) nextIndex = (await adminDB.collection('levels').count().get()).data().count;          
             try {
                 const newLevelRef = adminDB.collection('levels').doc(data.id);
                 data['levelId'] = newLevelRef.id;
                 t.create(newLevelRef, data);
                 nextIndex++;
                 t.update(adminDB.collection('index').doc('metrics'), {
-                    'questionCount': FieldValue.increment(1),
+                    'levels': FieldValue.increment(1),
                 });
                 t.update(adminDB.collection('index').doc('levels'), {
                     'order': FieldValue.arrayUnion(newLevelRef.id),

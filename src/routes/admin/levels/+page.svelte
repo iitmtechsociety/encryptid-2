@@ -4,7 +4,7 @@
 	import { storage } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 	import { sendErrorToast, sendSuccessToast } from '$lib/utils';
-	import { uuidv4 as v4 } from 'uuid';
+	import { v4 } from 'uuid';
 	let showAnswers = false;
 
 	async function deleteQuestion(id: string) {
@@ -176,7 +176,7 @@
 			<div class="label">
 				<span class="label-text">Code Comment</span>
 			</div>
-			<textarea class="textarea textarea-bordered" placeholder="Code Comment"></textarea>
+			<textarea class="textarea textarea-bordered" placeholder="Code Comment" bind:value={levelModalDataCodeComment}></textarea>
 			<div class="modal-action">
 				<form method="dialog">
 					<!-- if there is a button in form, it will close the modal -->
@@ -203,29 +203,8 @@
 	{/if}
 </button>
 
-<button
-	class="btn btn-outline btn-accent"
-	on:click={() => {
-		document.getElementById('reorder_modal').showModal();
-	}}
->
-	<List />
-	Reorder Levels
-</button>
 
-<dialog class="modal" id="reorder_modal">
-	<div class="modal-box">
-		<h3 class="font-bold text-lg">Reorder Elements</h3>
-		<p class="py-4">Press ESC key or click the button below to close</p>
 
-		<div class="modal-action">
-			<form method="dialog">
-				<button class="btn"> Cancel </button>
-				<button class="btn btn-primary"> Save </button>
-			</form>
-		</div>
-	</div>
-</dialog>
 
 <br />
 
@@ -263,7 +242,7 @@
 					{/each}
 				{/if}
 
-				{#if level.code_comment !== null}
+				{#if level.code_comment !== null && level.code_comment !== ''} 
 					<h4 class="font-bold">Code Comments</h4>
 					<div class="mockup-code">
 						<pre data-prefix="$"><code>{level.code_comment}</code></pre>
