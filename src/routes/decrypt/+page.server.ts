@@ -1,4 +1,5 @@
 export const prerender = false;
+export const csr = false;
 import {adminAuth,adminDB} from '$lib/server/admin';
 import { redirect } from '@sveltejs/kit';
 

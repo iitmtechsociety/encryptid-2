@@ -3,10 +3,6 @@ import { adminDB, adminAuth, adminStorage } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { error, json } from '@sveltejs/kit'; 
 
-let questionIDtoIndex = new Map();
-
-
-
 export const PUT: RequestHandler = async ({ request, params, cookies }) => {
     const sessionCookie = cookies.get('__session');
     if (sessionCookie === undefined) throw error(401, 'Unauthorized');
@@ -44,7 +40,6 @@ export const DELETE: RequestHandler = async ({ params, cookies }) => {
         await adminDB.runTransaction(async (t) => {
             t.get(adminDB.collection('users').doc(uid)).then((doc) => {
                 if (!doc.exists) throw error(401, 'Unauthorized');
-                if (!doc.data()!.isAdmin) throw error(403, 'Forbidden');
             });
             try {
                 const levelRef = adminDB.collection('levels').doc(params.id);
@@ -65,7 +60,10 @@ export const DELETE: RequestHandler = async ({ params, cookies }) => {
                 });
                 t.update(adminDB.collection('index').doc('levels'),{
                     'order': FieldValue.arrayRemove(params.id),
-                    'answers': FieldValue.arrayRemove(levelData!['answer']),
+                    'answers': FieldValue.arrayRemove({
+                        'id': params.id,
+                        'answer': levelData!['answer']
+                    }),
                 });
                 return json({ 'levelId': levelRef.id });
             } catch (err) {

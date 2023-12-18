@@ -70,8 +70,10 @@
 			.replace(/[^a-zA-Z0-9]/g, '')
 			.replace(/\s+/g, '')
 			.slice(0, 20);
-		if (username.length < 3) errorMessage = 'Minimum 3 characters.';
+		event.target.value = username;
+			if (username.length < 3) errorMessage = 'Minimum 3 characters.';
 		if (username.length >= 3 && username.length <= 20) errorMessage = '';
+		
 	};
 	import { AlertTriangle } from 'lucide-svelte';
 	import type { FirebaseError } from 'firebase/app';
@@ -123,7 +125,6 @@
 					class:disabled={busy}
 					class:input-error={errorMessage !== ''}
 					class="input input-bordered input-success w-full max-w-lg"
-					bind:value={username}
 					on:input={setUsername}
 				/>
 				<br />

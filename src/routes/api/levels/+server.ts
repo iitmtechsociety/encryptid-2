@@ -32,6 +32,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 });
                 t.update(adminDB.collection('index').doc('levels'), {
                     'order': FieldValue.arrayUnion(newLevelRef.id),
+                    'answers': FieldValue.arrayUnion({
+                        'id': newLevelRef.id,
+                        'answer': data.answer,
+                    }),
                 });
                 return json({ 'levelId': newLevelRef.id });
                 
