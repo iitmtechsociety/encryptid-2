@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import '../app.css';
-	import { SignedIn, SignedOut, FirebaseApp, Doc } from 'sveltefire';
+	import { SignedIn, SignedOut, FirebaseApp,userStore, Doc } from 'sveltefire';
 	import { auth, firestore, storage } from '$lib/firebase';
 	import { signOut } from 'firebase/auth';
 	import { goto } from '$app/navigation';
@@ -13,7 +13,31 @@
 		});
 		goto('/');
 	}
-	import { Key, Trophy, ShieldBan } from 'lucide-svelte';
+	import { Key, Trophy, ShieldBan, ArrowRight, MoveRight, Flame } from 'lucide-svelte';
+	enum UserStatus {
+		none,
+		username,
+		done
+	}
+	let userStatus: UserStatus = UserStatus.none;
+	import {onMount} from 'svelte';
+	onMount(async () => {
+		const user = userStore(auth);
+		if (user === null) return;
+		const r = await fetch('/api/user_exists', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ userId: user!.uid })
+		});
+		const {exists} = await r.json();
+		if (exists === true) {
+			userStatus = UserStatus.done;
+		} else {
+			userStatus = UserStatus.username;
+		}
+	});
 </script>
 
 <ToastContainer placement="top-right" let:data>
@@ -91,25 +115,38 @@
 						</div>
 					</dialog>
 
-					{#if data.isAdmin === true && !$page.route.id?.match(/admin/g)}
+					<!-- {#if data.isAdmin === true && !$page.route.id?.match(/admin/g)}
 						<button class="btn btn-secondary btn-outline mr-4" on:click={() => goto('/admin')}>
 							<ShieldBan size="15px" />
 							Admin Panel
 						</button>
-					{/if}
+					{/if} -->
 				</Doc>
 			</SignedIn>
-			<SignedOut>
+			<button class="btn text-lg mr-4" class:btn-accent={$page.route.id?.match(/team/g)}   class:btn-ghost={!$page.route.id?.match(/team/g)} on:click={() => goto('/team')}
+				>Team<Flame /></button
+			>
+			<button class="btn text-lg mr-4" class:btn-accent={$page.route.id?.match(/leaderboard/g)}   class:btn-ghost={!$page.route.id?.match(/leaderboard/g)} on:click={() => goto('/leaderboard')}
+				>Leaderboard<Trophy /></button
+			>
+			{#if userStatus !== UserStatus.done}
 				{#if !$page.route.id?.match(/registration/g)}
-					<button class="btn btn-secondary text-lg" on:click={() => goto('/registration')}
-						>Start Decrypting</button
+					<button class="btn btn-primary text-lg" on:click={() => goto('/registration')}
+						>
+						{#if userStatus === UserStatus.none}
+						Get Started
+						{:else if userStatus === UserStatus.username}
+						Complete Registration
+						{/if}
+
+						<MoveRight /></button
 					>
 				{/if}
-			</SignedOut>
+				{/if}
 		</div>
 	</div>
-	<SignedIn let:user>
-		{#if $page.route.id?.match(/leaderboard|decrypt|profile/g)}
+	<!-- <SignedIn let:user>
+		{#if $page.route.id?.match(/decrypt|profile/g)}
 			<Doc ref={`users/${user.uid}`} let:data>
 				<div class="flex w-screen justify-center">
 					<ul class="menu bg-base-200 lg:menu-horizontal rounded-box">
@@ -137,6 +174,6 @@
 				</div>
 			</Doc>
 		{/if}
-	</SignedIn>
+	</SignedIn> -->
 	<slot />
 </FirebaseApp>

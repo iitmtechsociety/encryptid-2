@@ -44,7 +44,11 @@
                 {:else}
                 <span class="text-lg">{index+1}</span>
                 {/if}
-              <td>{userEntry.username}</td>
+              <td>{userEntry.username} 
+              {#if userEntry.admin_tag === true}
+               <div class="badge badge-error badge-outline">ORGANIZER</div>
+              {/if}
+              </td>
               <td>{userEntry.points}</td>
               <td>{userEntry.level}</td>
             </tr>

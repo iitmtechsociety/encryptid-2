@@ -5,17 +5,9 @@ export default {
     extend: {},
   },
   daisyui: {
-    base: true,
-    styled: true,
-    themes: [
-      //   {
-      //   cyberpunk: {
-      //     // ...require('daisyui/src/theming/themes')['cyberpunk'],
-      //   //  "base-100": "#171212"
-      //   }
-      // }
-      "cyberpunk", "forest", "dim"
-    ],
+    // base: true,
+    // styled: true,
+    themes: [ "forest", "dim", "sunset", "night", "dracula",  ],
   },
   plugins: [require("daisyui")],
 }

@@ -53,7 +53,7 @@
 			console.log(jsonData);
 			if (jsonData.exists === true) {
 				console.log('redirecting');
-				goto('/decrypt');
+				goto('/');
 			} else {
 				noRedirections = true;
 			}
@@ -87,8 +87,7 @@
 			body: JSON.stringify({ username })
 		});
 		if (r.status === 200) {
-			busy = false;
-			goto('/decrypt');
+			goto('/');
 		} else {
 			console.log(r);
 			busy = false;
@@ -143,11 +142,20 @@
 </SignedIn>
 
 <SignedOut>
-	<button class="btn btn-primary" class:disabled={busy} on:click={() => signInWithGoogle()}>
-		{#if busy}
+	<div class="hero min-h-screen bg-base-200">
+		<div class="hero-content flex-col lg:flex-row">
+		  <img src="https://img.freepik.com/premium-photo/bank-vault-door-generative-ai_717906-2642.jpg" class="max-w-sm rounded-lg shadow-2xl" />
+		  <div>
+			<h1 class="text-5xl font-bold">Register for Encryptid</h1>
+			<p class="py-6">You'll want to use your <b>IITM Email</b> ID to sign up.</p>
+			<button class="btn btn-primary" class:disabled={busy} on:click={() => signInWithGoogle()}>
+				{#if busy}
 			<span class="loading loading-bars loading-xs"></span>
 		{:else}
-			Register
+		Create Account
 		{/if}
-	</button>
+				</button>
+		  </div>
+		</div>
+	  </div>
 </SignedOut>
