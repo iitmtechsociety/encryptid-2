@@ -23,7 +23,10 @@
 	import {onMount} from 'svelte';
 	onMount(async () => {
 		const user = userStore(auth);
-		if (user === null) return;
+		if (user === null) {
+			userStatus = UserStatus.none;
+			return;
+		}
 		const r = await fetch('/api/user_exists', {
 			method: 'POST',
 			headers: {
@@ -38,9 +41,6 @@
 			userStatus = UserStatus.username;
 		}
 	});
-	export const regCompleteStatus = ()=>{
-		userStatus = UserStatus.done;
-	};
 </script>
 
 <ToastContainer placement="top-right" let:data>
@@ -51,7 +51,7 @@
 	<div class="navbar">
 		<div class="flex-1">
 			<a href="/">
-				<span class="text-2xl font-bold" id="event-logo-hero"> Encryptid 2.0 </span>
+				<span class="text-2xl font-bold" id="event-logo-hero"> EncryptID 2.0 </span>
 			</a>
 		</div>
 		<div class="navbar-end">
