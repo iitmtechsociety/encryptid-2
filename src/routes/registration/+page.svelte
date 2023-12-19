@@ -87,7 +87,7 @@
 			body: JSON.stringify({ username })
 		});
 		if (r.status === 200) {
-			goto('/');
+			goto('/?reg=complete');
 		} else {
 			console.log(r);
 			busy = false;

@@ -38,6 +38,9 @@
 			userStatus = UserStatus.username;
 		}
 	});
+	export const regCompleteStatus = ()=>{
+		userStatus = UserStatus.done;
+	};
 </script>
 
 <ToastContainer placement="top-right" let:data>
