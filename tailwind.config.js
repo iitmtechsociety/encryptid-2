@@ -7,7 +7,7 @@ export default {
   daisyui: {
     // base: true,
     // styled: true,
-    themes: ["sunset"],
+    themes: ["night"],
   },
   plugins: [require("daisyui")],
 }
