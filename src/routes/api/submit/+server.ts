@@ -11,6 +11,9 @@ export const POST: RequestHandler = async ({
     request,
     cookies
 }) => {
+    return json({
+        "result": "sus"
+    });
     if (!snapshotSetup) {
         console.log('answers not loaded yet. loading....');
         const docRef = await adminDB.collection('index').doc('levels');
