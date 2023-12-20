@@ -5,17 +5,20 @@ let existingUserIds: string[] = [];
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
     const sessionCookie = cookies.get('__session');
-    if(sessionCookie === undefined) throw error(401,'Unauthorized');
-    const { userId } = await request.json();
-    if(existingUserIds.includes(userId)){
-        console.log('user exists in cache');
-        return json({exists: true});
-    
-    };
+    if(sessionCookie === undefined) return json({
+        exists: false
+    })
+   
+   
     console.log('user_exists');
     try{
         const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie);
         const uid = decodedClaims.uid;
+         if(existingUserIds.includes(uid)){
+        console.log('user exists in cache');
+        return json({exists: true});
+    
+    };
         console.log('uid: ', uid);
         const userIndexDoc = await adminDB.collection('index').doc('users').get();
         if(userIndexDoc.data() !== undefined) {

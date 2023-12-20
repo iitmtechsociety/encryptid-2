@@ -37,13 +37,16 @@
         <tbody>
             {#each lb as userEntry, index}
       
-            <tr class="text-md">
+            <tr class="text-md" class:active={index<=2}>
               <td class="flex max-w-fit">
-                {#if index === 0 || index === 1 || index === 2}
+                <span class="text-lg" class:font-bold={index <= 2} class:text-warning={index===0} class:text-accent={index===1} class:text-primary={index===2}>#{index+1}</span>
+                <!-- {#if index === 0 || index === 2}
                 <Medal />
+                {:else if index === 1}
+                <span class="text-lg text-silver">#{index+1}</span>
                 {:else}
-                <span class="text-lg">{index+1}</span>
-                {/if}
+                <span class="text-lg">#{index+1}</span>
+                {/if} -->
               <td>{userEntry.username} 
               {#if userEntry.admin_tag === true}
                <div class="badge badge-error badge-outline">ORGANIZER</div>

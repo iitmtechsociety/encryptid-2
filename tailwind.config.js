@@ -2,6 +2,9 @@
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
+    colors: {
+      black: "#231f20",
+    },
     extend: {},
   },
   daisyui: {
