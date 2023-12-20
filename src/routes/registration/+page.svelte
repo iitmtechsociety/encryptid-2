@@ -49,6 +49,10 @@
 				},
 				body: JSON.stringify({ userId: data.uid })
 			});
+			if (r.status === 401) {
+				goto('/registration?reg=complete');
+				return;
+			}
 			const jsonData = await r.json();
 			console.log(jsonData);
 			if (jsonData.exists === true) {
@@ -71,9 +75,8 @@
 			.replace(/\s+/g, '')
 			.slice(0, 20);
 		event.target.value = username;
-			if (username.length < 3) errorMessage = 'Minimum 3 characters.';
+		if (username.length < 3) errorMessage = 'Minimum 3 characters.';
 		if (username.length >= 3 && username.length <= 20) errorMessage = '';
-		
 	};
 	import { AlertTriangle } from 'lucide-svelte';
 	import type { FirebaseError } from 'firebase/app';
@@ -144,18 +147,26 @@
 <SignedOut>
 	<div class="hero min-h-screen bg-base-200">
 		<div class="hero-content flex-col lg:flex-row">
-		  <img src="https://img.freepik.com/premium-photo/bank-vault-door-generative-ai_717906-2642.jpg" class="max-w-sm rounded-lg shadow-2xl" />
-		  <div>
-			<h1 class="text-5xl font-bold">Register for Encryptid</h1>
-			<p class="py-6">You'll want to use your <b>IITM Email</b> ID to sign up.</p>
-			<button class="btn btn-primary" class:disabled={busy} on:click={() => signInWithGoogle()}>
-				{#if busy}
-			<span class="loading loading-bars loading-xs"></span>
-		{:else}
-		Create Account
-		{/if}
+			<img
+				src="https://img.freepik.com/premium-photo/bank-vault-door-generative-ai_717906-2642.jpg"
+				class="max-w-sm rounded-lg shadow-2xl"
+			/>
+			<div>
+				<h1 class="text-5xl font-bold">Register for Encryptid</h1>
+				<p class="py-6">You'll want to use your <b>IITM Email</b> ID to sign up.</p>
+				<p class="py-6">If you already have an account. Use your <b>IITM Email</b> ID to log in.</p>
+				<button
+					class="btn btn-primary btn-lg btn-wide"
+					class:disabled={busy}
+					on:click={() => signInWithGoogle()}
+				>
+					{#if busy}
+						<span class="loading loading-bars loading-xs"></span>
+					{:else}
+						Register / Log In
+					{/if}
 				</button>
-		  </div>
+			</div>
 		</div>
-	  </div>
+	</div>
 </SignedOut>
