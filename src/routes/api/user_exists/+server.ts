@@ -5,7 +5,9 @@ let existingUserIds: string[] = [];
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
     const sessionCookie = cookies.get('__session');
-    if(sessionCookie === undefined) throw error(401,'Unauthorized');
+    if(sessionCookie === undefined) return json({
+        exists: false
+    })
    
    
     console.log('user_exists');

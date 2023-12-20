@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	let innerWidth;
 	import '../app.css';
 	import { SignedIn, User, FirebaseApp, userStore, Doc } from 'sveltefire';
 	import { auth, firestore, storage } from '$lib/firebase';
@@ -10,12 +11,13 @@
 	async function signOutSSR() {
 		console.log('signing out');
 		await signOut(auth);
+		userStatus = UserStatus.none;
 		const res = await fetch('/api/signin', {
 			method: 'DELETE'
 		});
 		goto('/');
 	}
-	import { Key, Trophy, ShieldBan, ArrowRight, MoveRight, Flame } from 'lucide-svelte';
+	import { Key, Trophy, ShieldBan, ArrowRight, MoveRight, Flame, Users } from 'lucide-svelte';
 	enum UserStatus {
 		none,
 		username,
@@ -23,39 +25,36 @@
 	}
 	let userStatus: UserStatus = UserStatus.none;
 	import { onMount } from 'svelte';
-	onMount(async () => {
-		const user = userStore(auth);
-		if (user === null) {
-			userStatus = UserStatus.none;
-			return;
-		}
-		const r = await fetch('/api/user_exists', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
+	userStore(auth).subscribe(
+		async (user) => {
+			if(user === null) return;
+			if(user!.uid === undefined){
+				userStatus = UserStatus.none;
 			}
-		});
-		if (r.status === 401) {
-			signOutSSR();
-			return;
+			else {
+				const r = await fetch('/api/user_exists',{
+					method: 'POST',
+							});
+				if(r.ok){
+					const {exists} = await r.json();
+					if(exists === true){
+						userStatus = UserStatus.done;
+					} else {
+						userStatus = UserStatus.username;
+					}
+				}
+						}
 		}
-		const { exists } = await r.json();
-		if (exists === true) {
-			userStatus = UserStatus.done;
-		} else {
-			userStatus = UserStatus.username;
-		}
-	});
-	const completeReg = () => {
-		userStatus = UserStatus.done;
-	};
+	);
 </script>
 
 <ToastContainer placement="top-right" let:data>
 	<FlatToast {data} />
 	<!-- Provider template for your toasts -->
 </ToastContainer>
+<svelte:window bind:innerWidth={innerWidth} />
 <FirebaseApp {auth} {storage} {firestore}>
+	
 	<div class="navbar">
 		<div class="flex-1">
 			<a href="/">
@@ -155,21 +154,24 @@
 				class="btn text-lg mr-4"
 				class:btn-accent={$page.route.id?.match(/leaderboard/g)}
 				class:btn-ghost={!$page.route.id?.match(/leaderboard/g)}
-				on:click={() => goto('/leaderboard')}>Leaderboard<Trophy /></button
+				on:click={() => goto('/leaderboard')}>
+				{#if innerWidth >= 600}
+				Leaderboard
+				{/if}
+				
+				<Trophy /></button
 			>
-			<button
-				class="btn text-lg mr-4 btn-outline btn-secondary"
-				on:click={() => open('https://discord.gg/eHjDrCCbsE')}>Join Discord<Flame /></button
-			>
+			
 			{#if userStatus !== UserStatus.done}
 				{#if !$page.route.id?.match(/registration/g)}
 					<button class="btn btn-primary text-lg" on:click={() => goto('/registration')}>
+						{#if innerWidth >= 600}
 						{#if userStatus === UserStatus.none}
 							Get Started
 						{:else if userStatus === UserStatus.username}
 							Complete Registration
 						{/if}
-
+						{/if}
 						<MoveRight /></button
 					>
 				{/if}
@@ -206,5 +208,5 @@
 			</Doc>
 		{/if}
 	</SignedIn> -->
-	<slot {completeReg} />
+	<slot />
 </FirebaseApp>
