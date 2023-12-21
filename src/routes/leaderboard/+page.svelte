@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { SignedOut,SignedIn,Doc } from 'sveltefire';
+  import { SignedOut,SignedIn,Doc,userStore } from 'sveltefire';
+  import { auth } from '$lib/firebase';
   let lb: any[] = [];
   onMount
   import {Trophy,Medal} from 'lucide-svelte';
@@ -9,19 +10,25 @@
     const {leaderboard} = await res.json();
     lb = leaderboard;
   });
+  let user = userStore(auth);
 </script>
 <div class="max-w-screen">
   <center>
 
-      <span class="font-bold text-5xl">Leaderboard</span>
+      <span class="font-bold text-5xl">Leaderboard</span><br>
 
-    <SignedIn let:user>
-      <Doc ref={`users/${user.uid}`} let:data>
+    <SignedIn let:user={user2}>
+      <Doc ref={`users/${user2.uid}`} let:data>
         {#if data.leaderboardPosition !== null}
-        <span class="font-bold text-5xl">#{data.leaderboardPosition}</span>
+        <span class="text-5xl"
+            class:font-bold={data.leaderboardPosition <= 3}
+            class:text-warning={data.leaderboardPosition === 1}
+            class:text-accent={data.leaderboardPosition === 2}
+            class:text-primary={data.leaderboardPosition === 3}
+        >#{data.leaderboardPosition}</span>
         {/if}
       </Doc>
-    </SignedIn>
+      </SignedIn>
 <div class="lg:max-w-5xl mt-10">
   
       <table class="table table-lg">
@@ -37,7 +44,7 @@
         <tbody>
             {#each lb as userEntry, index}
       
-            <tr class="text-md" class:active={index<=2}>
+            <tr class="text-md" class:active={userEntry['userId'] === $user?.uid}>
               <td class="flex max-w-fit">
                 <span class="text-lg" class:font-bold={index <= 2} class:text-warning={index===0} class:text-accent={index===1} class:text-primary={index===2}>#{index+1}</span>
                 <!-- {#if index === 0 || index === 2}
