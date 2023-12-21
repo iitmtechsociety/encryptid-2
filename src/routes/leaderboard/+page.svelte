@@ -12,9 +12,9 @@
 </script>
 <div class="max-w-screen">
   <center>
-    <SignedOut>
+
       <span class="font-bold text-5xl">Leaderboard</span>
-    </SignedOut>
+
     <SignedIn let:user>
       <Doc ref={`users/${user.uid}`} let:data>
         {#if data.leaderboardPosition !== null}
