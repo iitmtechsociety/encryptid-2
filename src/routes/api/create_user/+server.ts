@@ -28,7 +28,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 taken_usernames = usernames;
                 if(usernames.includes(username)) throw error(409,'USERNAME_ALREADY_TAKEN');
             }
-            
+            const lbDoc = await t.get(adminDB.collection('index').doc('leaderboard'));
+            const lb = lbDoc.data()!['leaderboard'];
             t.set(userDocRef, {
                 userId: uid,
                 username: username,
@@ -55,6 +56,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                     points: 0,
                     userId: uid,
                     username: username,
+                    leaderboardPosition: lb.length + 1,
                     admin_tag: false,
                 }),
                 last_updated: FieldValue.serverTimestamp(),
