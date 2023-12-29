@@ -51,15 +51,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 "usersByLevel.1": FieldValue.increment(1),
             });
             t.update(adminDB.collection('index').doc('leaderboard'),{
-                "leaderboard": FieldValue.arrayUnion({
+                leaderboard: FieldValue.arrayUnion({
                     level: 1,
                     points: 0,
                     userId: uid,
                     username: username,
                     leaderboardPosition: lb.length + 1,
                     admin_tag: false,
+                    last_updated: FieldValue.serverTimestamp(),
                 }),
-                last_updated: FieldValue.serverTimestamp(),
+                // last_updated: FieldValue.serverTimestamp(),
             });
 
         });
