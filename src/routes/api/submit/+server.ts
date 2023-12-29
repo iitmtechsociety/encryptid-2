@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({
             
             userToLevelMap.set(userId, level + 1);
             const log = {
-                "timestamp": FieldValue.serverTimestamp,
+                "timestamp": FieldValue.serverTimestamp(),
                 "type": "pass",
                 "currentLevel": level,
                 "nextLevel": level + 1,
