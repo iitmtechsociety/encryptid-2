@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { error, json } from '@sveltejs/kit';
+import { error, json, redirect } from '@sveltejs/kit';
 import { adminAuth, adminDB } from '$lib/server/admin';
 import { FieldValue } from 'firebase-admin/firestore'; 
 
@@ -10,29 +10,35 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     console.log('session cookie: ', sessionCookie !== undefined ? 'yes' : 'no');
     const {username} = await request.json();
     console.log('username: ', username);
-    if(username.length <= 3 && username.length >= 20) throw error(400,'Username must be between 3 and 20 characters long');
+    const cleaned = username.toLowerCase()
+			.trim()
+			.replace(/[^a-zA-Z0-9]/g, '')
+			.replace(/\s+/g, '')
+			.slice(0, 20);
+    if(cleaned.length <= 3 && cleaned.length >= 20) throw error(400,'Username must be between 3 and 20 characters long');
     if(sessionCookie === undefined) throw error(401,'Unauthorized');
     try{
-        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie);
+        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie).catch((e) => { console.error(e)});
         const uid = decodedClaims.uid;
+        if (uid === undefined) return redirect(308,'/registration');
         console.log('uid: ', uid);
         await adminDB.runTransaction(async (t) => {
             const userDocRef = adminDB.collection('users').doc(uid);
             const userDoc = await t.get(userDocRef);
             if(userDoc.exists) throw error(409,'USER_ALREADY_EXISTS');
-            if(taken_usernames.includes(username)) throw error(409,'USERNAME_ALREADY_TAKEN');
+            if(taken_usernames.includes(cleaned)) throw error(409,'USERNAME_ALREADY_TAKEN');
             const usernameIndexRef = adminDB.collection('index').doc('users');
             const usernameIndex = await t.get(usernameIndexRef);
             if (usernameIndex.data() !== undefined) {
                 const usernames= usernameIndex.data()!['usernames'];
                 taken_usernames = usernames;
-                if(usernames.includes(username)) throw error(409,'USERNAME_ALREADY_TAKEN');
+                if(usernames.includes(cleaned)) throw error(409,'USERNAME_ALREADY_TAKEN');
             }
             const lbDoc = await t.get(adminDB.collection('index').doc('leaderboard'));
             const lb = lbDoc.data()!['leaderboard'];
             t.set(userDocRef, {
                 userId: uid,
-                username: username,
+                username: cleaned,
                 email: decodedClaims.email,
                 points: 0,
                 leaderboardPosition: null,
@@ -43,7 +49,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 logs: []
             });
             t.update(usernameIndexRef, {
-                usernames: FieldValue.arrayUnion(username),
+                usernames: FieldValue.arrayUnion(cleaned),
                 userIds: FieldValue.arrayUnion(uid),
             });
             t.update(adminDB.collection('index').doc('metrics'),{
@@ -55,7 +61,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                     level: 1,
                     points: 0,
                     userId: uid,
-                    username: username,
+                    username: cleaned,
                     leaderboardPosition: lb.length + 1,
                     admin_tag: false,
                     last_updated: FieldValue.serverTimestamp(),
