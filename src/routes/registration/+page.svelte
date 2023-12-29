@@ -1,13 +1,19 @@
 <script lang="ts">
-	import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+	import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
-	import { sendErrorToast } from '$lib/utils';
+	import { sendErrorToast, sendSuccessToast } from '$lib/utils';
 	export let data: PageData;
 	import { auth } from '$lib/firebase';
-	import { SignedOut, SignedIn, userStore } from 'sveltefire';
 	import { goto } from '$app/navigation';
-	let noRedirections: Boolean = false;
+
+	async function signOutSSR() {
+		console.log('signing out');
+		await signOut(auth);
+		const res = await fetch('/api/signin', {
+			method: 'DELETE'
+		});
+	}
+
 	async function signInWithGoogle() {
 		const provider = new GoogleAuthProvider();
 		let credential;
@@ -24,6 +30,7 @@
 		}
 		console.log(credential);
 		const idToken = await credential.user.getIdToken();
+		data.userId = credential.user.uid;
 		const res = await fetch('/api/signin', {
 			method: 'POST',
 			headers: {
@@ -34,35 +41,29 @@
 		if (res.status !== 200) {
 			sendErrorToast('Registration Failed!', 'Something went wrong. Please try again.');
 		} else {
-			redirectIfNeeded();
+			redirectIfExists();
 		}
 	}
 
-	async function redirectIfNeeded() {
-		console.log(data);
-		if (data.uid === undefined) goto('/registration');
-		else {
-			const r = await fetch('/api/user_exists', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ userId: data.uid })
-			});
-			if (r.status === 401) {
-				goto('/registration?reg=complete');
-				return;
-			}
+	const redirectIfExists = async () => {
+		const r = await fetch('/api/user_exists', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ userId: data.userId })
+		});
+		if (r.status === 401) {
+			console.log('wot?');
+		} else {
 			const jsonData = await r.json();
-			console.log(jsonData);
 			if (jsonData.exists === true) {
-				console.log('redirecting');
 				goto('/');
 			} else {
-				noRedirections = true;
+				window.location.reload();
 			}
 		}
-	}
+	};
 
 	let username: String = '';
 	let busy: Boolean = false;
@@ -78,8 +79,10 @@
 		if (username.length < 3) errorMessage = 'Minimum 3 characters.';
 		if (username.length >= 3 && username.length <= 20) errorMessage = '';
 	};
+
 	import { AlertTriangle } from 'lucide-svelte';
 	import type { FirebaseError } from 'firebase/app';
+
 	const completeRegistration = async () => {
 		busy = true;
 		const r = await fetch('/api/create_user', {
@@ -90,63 +93,57 @@
 			body: JSON.stringify({ username })
 		});
 		if (r.status === 200) {
-			goto('/?reg=complete');
+			sendSuccessToast('Redirecting...', 'Account Created');
+			setTimeout(() => (window.location.href = '/'), 3000);
 		} else {
 			console.log(r);
 			busy = false;
-			alert('Something went wrong. Please try again.');
+			sendErrorToast('Account Creation Failed', 'Please try again');
 		}
-
-		// setTimeout(() => {
-		//   busy = false;
-		//   // window.location.href = `/onboarding/${username}/2`;
-		// }, 5000);
 	};
-	onMount(() => {
-		const user = userStore(auth);
-		if (user !== null) {
-			redirectIfNeeded();
-		}
-	});
 </script>
 
-<SignedIn>
-	{#if noRedirections}
-		<div class="w-screen">
-			<center
-				><h1 class="text-5xl font-bold mb-5">Choose a Username</h1>
-				<div class="max-w-fit mb-10">
-					<div role="alert" class="alert">
-						<AlertTriangle size="20px" class="text-primary" />
-						<span>This cannot be changed later.</span>
-					</div>
+{#if data.registration_state === 'username_not_set'}
+	<div class="w-screen">
+		<center
+			><h1 class="text-5xl font-bold mb-5">Choose a Username</h1>
+			<div class="max-w-fit mb-10">
+				<div role="alert" class="alert">
+					<AlertTriangle size="20px" class="text-primary" />
+					<span>This cannot be changed later.</span>
 				</div>
-				<input
-					type="text"
-					placeholder="Username"
-					class:disabled={busy}
-					class:input-error={errorMessage !== ''}
-					class="input input-bordered input-success w-full max-w-lg"
-					on:input={setUsername}
-				/>
-				<br />
-				<span class="mt-2">{errorMessage}</span>
-				<div class="mb-5" />
-				<button class="btn btn-primary" on:click={completeRegistration} class:disabled={busy}>
-					{#if busy}
-						<span class="loading loading-bars loading-xs"></span>
-					{:else}
-						Complete Registration
-					{/if}
-				</button>
-			</center>
-		</div>
-	{/if}
-</SignedIn>
-
-<SignedOut>
+			</div>
+			<input
+				type="text"
+				placeholder="Username"
+				class:disabled={busy}
+				class:input-error={errorMessage !== ''}
+				class="input input-bordered input-success w-full max-w-lg"
+				on:input={setUsername}
+			/>
+			<br />
+			<span class="mt-2">{errorMessage}</span>
+			<div class="mb-5" />
+			<button
+				class="btn btn-primary"
+				on:click={() => {
+					if (busy) return;
+					completeRegistration();
+				}}
+				class:disabled={busy}
+			>
+				{#if busy}
+					<span class="loading loading-bars loading-xs"></span>
+				{:else}
+					Complete Registration
+				{/if}
+			</button>
+		</center>
+	</div>
+{:else}
 	<div class="hero min-h-screen bg-base-200">
 		<div class="hero-content flex-col lg:flex-row">
+			<!-- svelte-ignore a11y-missing-attribute -->
 			<img
 				src="https://img.freepik.com/premium-photo/bank-vault-door-generative-ai_717906-2642.jpg"
 				class="max-w-sm rounded-lg shadow-2xl"
@@ -169,4 +166,4 @@
 			</div>
 		</div>
 	</div>
-</SignedOut>
+{/if}
