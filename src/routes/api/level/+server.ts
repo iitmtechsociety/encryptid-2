@@ -9,15 +9,24 @@ let snapshotSetup = false;
 const sessionCookieToUserIDMap = new Map();
 const userToLevelMap = new Map();
 const questionDataMap = new Map();
+let completedUsers = [];
+
 
 
 export const GET: RequestHandler = async ({ cookies }) => {
+    return json({
+        "result": "completed"
+    });
     const sessionCookie = cookies.get('__session');
     if (sessionCookie === undefined) return redirect(306, '/registration');
     try {
         const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie).catch((e) => { console.log(e); });
         const userId = decodedClaims.uid;
-        if(userId === undefined) return redirect(306, '/registration');
+        if (userId === undefined) return redirect(306, '/registration');
+        if (completedUsers.includes(userId)) return json({
+            "result": "completed",
+            "nextLevel": null
+        });
         if (!userToLevelMap.has(userId)) {
             const docRef = await adminDB.collection('users').doc(userId);
             const doc = await docRef.get();
@@ -32,7 +41,8 @@ export const GET: RequestHandler = async ({ cookies }) => {
             const data = doc.data();
             if (data !== undefined) {
             answers = data.answers;
-            order = data.order;
+                order = data.order;
+                completedUsers = data.completed;
             }
             snapshotSetup = true;
             docRef.onSnapshot((doc) => {
@@ -42,6 +52,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
                     console.log('answers updated');
                     answers = data.answers;
                     order = data.order;
+                    completedUsers = data.completed;
                 }
         });
         }
@@ -118,6 +129,7 @@ export const POST: RequestHandler = async ({
     if (userId === undefined) throw error(401, "Unauthorized");
     console.log(userId);
     let levelPassed = false;
+    let levelPassedWithCompletion = false;
     await adminDB.runTransaction(async (t) => { 
         const userDocRef = adminDB.collection('users').doc(userId);
         let level: number = -1;
@@ -148,21 +160,45 @@ export const POST: RequestHandler = async ({
         if (answer === undefined) throw error(500, "Answer Required");
         if (answer === expectedAnswer) { 
             console.log("correct answer");
-            
+            let didComplete = false;
+            if (level === order.length) {
+                didComplete = true;
+            levelPassedWithCompletion = true;}
             userToLevelMap.set(userId, level + 1);
             const log = {
                 "timestamp": Date.now(),
-                "type": "pass",
+                "type": didComplete ? "completed" : "pass",
                 "currentLevel": level,
-                "nextLevel": level + 1,
+                "nextLevel": level,
                 "expectedAnswer": expectedAnswer,
                 "submittedAnswer":answer,
             }
-            t.update(userDocRef, {
+            if (didComplete) {
+                t.update(userDocRef, {
+                    "logs": FieldValue.arrayUnion(log),
+                    "completed": true,
+            });
+            } else {
+                t.update(userDocRef, {
                 "logs": FieldValue.arrayUnion(log),
                 "level": FieldValue.increment(1),
                 "points": FieldValue.increment(100),
             });
+            }
+            
+            const metricsDocRef = adminDB.collection('index').doc('metrics');
+            if (didComplete) {
+                t.update(metricsDocRef, {
+                    "completed": FieldValue.increment(1)
+                });
+            } else {
+                const key1 = "usersByLevel." + (level + 1);
+                const key2 = "usersByLevel." + level;
+                t.update(metricsDocRef, {
+                [key1]: FieldValue.increment(1),
+                [key2]: FieldValue.increment(-1),
+                });
+            }
             levelPassed = true;
              
         } else {
@@ -183,10 +219,17 @@ export const POST: RequestHandler = async ({
     });
     console.log("transaction complete");
     if (levelPassed) {
-        return json({
+        if (levelPassedWithCompletion) {
+            return json({
+                "result": "completed",
+                "nextLevel": null
+            });
+        } else {
+            return json({
             "result": "passed",
             "nextLevel": userToLevelMap.get(userId)
         });
+        }
     }
     return json({
         "result": "failed",

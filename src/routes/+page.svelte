@@ -118,6 +118,14 @@
 	</Countdown>
 {:else if questionData == null}
 	<span class="loading loading-bars loading-lg"></span>
+{:else if questionData['result'] === 'completed'}
+	<center>
+		<span class="text-6xl" style="font-family: 'Rubik Glitch' !important;"
+			>DECRYPTION<br />PROGRESS</span
+		>
+		<br />
+		<span class="text-success text-9xl" style="font-family: 'Rubik Glitch' !important;">100%</span>
+	</center>
 {:else}
 	<span class="text-5xl font-bold">{questionData.title}</span>
 	<br /><br />
