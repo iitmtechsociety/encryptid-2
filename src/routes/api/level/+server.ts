@@ -14,9 +14,6 @@ let completedUsers = [];
 
 
 export const GET: RequestHandler = async ({ cookies }) => {
-    return json({
-        "result": "completed"
-    });
     const sessionCookie = cookies.get('__session');
     if (sessionCookie === undefined) return redirect(306, '/registration');
     try {
@@ -169,10 +166,16 @@ export const POST: RequestHandler = async ({
                 "timestamp": Date.now(),
                 "type": didComplete ? "completed" : "pass",
                 "currentLevel": level,
-                "nextLevel": level,
+                "nextLevel": level+1,
                 "expectedAnswer": expectedAnswer,
                 "submittedAnswer":answer,
             }
+            const leaderboardJobDef = {
+                "timestamp": Date.now(),
+                "newLevel": level+1,
+                "newPoints": level*100,
+                userId,
+            };
             if (didComplete) {
                 t.update(userDocRef, {
                     "logs": FieldValue.arrayUnion(log),
@@ -183,9 +186,11 @@ export const POST: RequestHandler = async ({
                 "logs": FieldValue.arrayUnion(log),
                 "level": FieldValue.increment(1),
                 "points": FieldValue.increment(100),
-            });
+            }); 
             }
-            
+            t.update(adminDB.collection('index').doc('leaderboard_task_queue'),{
+                jobs: FieldValue.arrayUnion(leaderboardJobDef)
+            });
             const metricsDocRef = adminDB.collection('index').doc('metrics');
             if (didComplete) {
                 t.update(metricsDocRef, {
@@ -230,6 +235,7 @@ export const POST: RequestHandler = async ({
             "nextLevel": userToLevelMap.get(userId)
         });
         }
+
     }
     return json({
         "result": "failed",

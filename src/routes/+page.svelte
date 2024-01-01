@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { sendErrorToast, sendSuccessToast } from '$lib/utils.js';
 	//@ts-ignore
 	let innerWidth;
 	export let data;
-	import { Download } from 'lucide-svelte';
+	import { Download, MoveRight } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import Countdown from 'svelte-countdown/src/index.js';
 	import { DownloadURL } from 'sveltefire';
@@ -125,6 +126,10 @@
 		>
 		<br />
 		<span class="text-success text-9xl" style="font-family: 'Rubik Glitch' !important;">100%</span>
+		<br/>
+		<button class="btn btn-success" on:click={()=>goto('/leaderboard')}>
+			View Leaderboard <MoveRight/>
+		</button>
 	</center>
 {:else}
 	<span class="text-5xl font-bold">{questionData.title}</span>
