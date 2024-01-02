@@ -7,18 +7,25 @@
 	import { Download, MoveRight } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import Countdown from 'svelte-countdown/src/index.js';
+	import src from 'svelte-time';
 	import { DownloadURL } from 'sveltefire';
 	let showCountdown = true;
 	const countDownTime = '2024-01-04 00:42:00';
 	let questionData = null;
 	let answer = '';
 	onMount(async () => {
+		const src_hints = document.getElementById('pain');
 		const r = await fetch('/api/config');
 		const config = await r.json();
 		showCountdown = !config.questions_enabled;
 		if(!showCountdown || data.registration_state !== "completed") return;
 		const r2 = await fetch('/api/level');
 		questionData = await r2.json();
+		if(questionData.result !== 'completed') {
+			if(questionData.code_comment !== undefined){
+				src_hints.appendChild(document.createComment(questionData.codeComment));
+			}
+		}
 	});
 
 	const setAnswer = (e) => {
@@ -185,3 +192,5 @@
 		Submit
 	</button>
 {/if}
+
+<div id="pain"></div>
