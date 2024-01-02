@@ -43,6 +43,24 @@
           </tr>
         </thead>
         <tbody>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td>kryo<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+          </tr>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-accent"></span></td>
+            <td>namanprez<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
+            <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
+          </tr>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-primary"></span></td>
+            <td>codergobhi<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td><span class="loading loading-infinity loading-lg text-primary"></span></td>
+            <td><span class="loading loading-infinity loading-lg text-primary"></span></td>
+          </tr>
             {#each lb as userEntry, index}
       
             <tr class="text-md" class:active={userEntry['userId'] === $user?.uid}>
@@ -57,7 +75,7 @@
                 {/if} -->
               <td>{userEntry.username} 
               {#if userEntry.admin_tag === true}
-               <div class="badge badge-error badge-outline">ORGANIZER</div>
+               <div class="badge badge-error badge-outline ml-2">ORGANIZER</div>
               {/if}
               </td>
               <td>{userEntry.points}</td>
