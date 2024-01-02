@@ -16,6 +16,7 @@
 		const r = await fetch('/api/config');
 		const config = await r.json();
 		showCountdown = !config.questions_enabled;
+		if(!showCountdown || data.registration_state !== "completed") return;
 		const r2 = await fetch('/api/level');
 		questionData = await r2.json();
 	});
