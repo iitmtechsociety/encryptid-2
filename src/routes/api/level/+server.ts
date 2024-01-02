@@ -11,7 +11,10 @@ const userToLevelMap = new Map();
 const questionDataMap = new Map();
 let completedUsers = [];
 
+const cleanAnswer = (answer: string) => {
+        return answer.trim().toLowerCase();
 
+}
 
 export const GET: RequestHandler = async ({ cookies }) => {
     const sessionCookie = cookies.get('__session');
@@ -155,7 +158,7 @@ export const POST: RequestHandler = async ({
         }
         const { answer } = await request.json();
         if (answer === undefined) throw error(500, "Answer Required");
-        if (answer === expectedAnswer) { 
+        if (cleanAnswer(answer) === cleanAnswer(expectedAnswer)) { 
             console.log("correct answer");
             let didComplete = false;
             if (level === order.length) {
