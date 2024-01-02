@@ -12,7 +12,8 @@ const questionDataMap = new Map();
 let completedUsers = [];
 
 const cleanAnswer = (answer: string) => {
-        return answer.trim().toLowerCase();
+    let cleanedAnswer = answer.replace(/[^a-zA-Z0-9]/g, '');    
+    return cleanedAnswer.toLowerCase();
 
 }
 
