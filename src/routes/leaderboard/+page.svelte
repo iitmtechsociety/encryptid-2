@@ -2,21 +2,24 @@
   import { SignedOut,SignedIn,Doc,userStore } from 'sveltefire';
   import { auth } from '$lib/firebase';
   let lb: any[] = [];
+  let last_update = undefined;
   onMount
-  import {Trophy,Medal} from 'lucide-svelte';
+  import {Trophy,Medal, Info} from 'lucide-svelte';
 	import { onMount } from 'svelte';
+  import Time from 'svelte-time';
   onMount(async () => {
     const res = await fetch(`/api/leaderboard/`);
-    const {leaderboard} = await res.json();
+    const {leaderboard,last_updated} = await res.json();
     lb = leaderboard;
+    last_update = last_updated;
   });
   let user = userStore(auth);
 </script>
 <div class="max-w-screen">
   <center>
-
+      
       <span class="font-bold text-5xl">Leaderboard</span><br>
-
+      
     <SignedIn let:user={user2}>
       <Doc ref={`users/${user2.uid}`} let:data>
         {#if data.leaderboardPosition !== null}
@@ -30,7 +33,7 @@
       </Doc>
       </SignedIn>
 <div class="lg:max-w-5xl mt-10">
-  
+  <span class="text-gray-900 flex ml-4"><div class="tooltip text-accent" data-tip="Leaderboard data is updated about every minute or so."><Info class="mr-2"/></div> <span class="text-accent">Last Updated:</span> {#if last_update === undefined}<span class="ml-2 text-accent loading loading-ring loading-md" />{:else} &nbsp; <Time timestamp={last_update} format={"MMMM DD, YYYY @ hh:mm A IST"} live={1 * 1_000} relative></Time>{/if}</span>
       <table class="table table-lg">
         <!-- head -->
         <thead>

@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 
 let leaderboard: [] = [];
 let snapshotSetup = false;
-
+let last_updated = 0;
 
 export const GET: RequestHandler = async ()=>{
     console.log('leaderboard');
@@ -14,6 +14,7 @@ export const GET: RequestHandler = async ()=>{
         console.log('leaderboard snapshot already setup');
         return json({
             leaderboard: leaderboard,
+            last_updated: last_updated,
         });
     }
     if(!snapshotSetup){
@@ -31,14 +32,17 @@ export const GET: RequestHandler = async ()=>{
                 if(data){
                     console.log('leaderboard updated');
                     leaderboard = data.leaderboard;
+                    last_updated = data.last_updated.toDate();
                 }
             });
         }
         if(data){
             console.log('leaderboard loaded. updating....');
             leaderboard = data.leaderboard;
+            last_updated = data.last_updated.toDate();
             return json({
                 leaderboard: leaderboard,
+                last_updated: last_updated,
             });
             
         }
