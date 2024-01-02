@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	import Countdown from 'svelte-countdown/src/index.js';
 	import { DownloadURL } from 'sveltefire';
-	let showCountdown = false;
+	let showCountdown = true;
 	const countDownTime = '2024-01-04 00:42:00';
 	let questionData = null;
 	let answer = '';

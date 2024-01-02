@@ -17,9 +17,7 @@
 </script>
 <div class="max-w-screen">
   <center>
-      
       <span class="font-bold text-5xl">Leaderboard</span><br>
-      
     <SignedIn let:user={user2}>
       <Doc ref={`users/${user2.uid}`} let:data>
         {#if data.leaderboardPosition !== null}
