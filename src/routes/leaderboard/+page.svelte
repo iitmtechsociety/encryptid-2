@@ -2,21 +2,22 @@
   import { SignedOut,SignedIn,Doc,userStore } from 'sveltefire';
   import { auth } from '$lib/firebase';
   let lb: any[] = [];
+  let last_update = undefined;
   onMount
-  import {Trophy,Medal} from 'lucide-svelte';
+  import {Trophy,Medal, Info} from 'lucide-svelte';
 	import { onMount } from 'svelte';
+  import Time from 'svelte-time';
   onMount(async () => {
     const res = await fetch(`/api/leaderboard/`);
-    const {leaderboard} = await res.json();
+    const {leaderboard,last_updated} = await res.json();
     lb = leaderboard;
+    last_update = last_updated;
   });
   let user = userStore(auth);
 </script>
 <div class="max-w-screen">
   <center>
-
       <span class="font-bold text-5xl">Leaderboard</span><br>
-
     <SignedIn let:user={user2}>
       <Doc ref={`users/${user2.uid}`} let:data>
         {#if data.leaderboardPosition !== null}
@@ -30,7 +31,7 @@
       </Doc>
       </SignedIn>
 <div class="lg:max-w-5xl mt-10">
-  
+  <span class="text-gray-900 flex ml-4"><div class="tooltip text-accent" data-tip="Leaderboard data is updated about every minute or so."><Info class="mr-2"/></div> <span class="text-accent">Last Updated:</span> {#if last_update === undefined}<span class="ml-2 text-accent loading loading-ring loading-md" />{:else} &nbsp; <Time timestamp={last_update} format={"MMMM DD, YYYY @ hh:mm A IST"} live={1 * 1_000} relative></Time>{/if}</span>
       <table class="table table-lg">
         <!-- head -->
         <thead>
@@ -42,6 +43,24 @@
           </tr>
         </thead>
         <tbody>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td>kryo<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+          </tr>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-accent"></span></td>
+            <td>namanprez<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
+            <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
+          </tr>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-primary"></span></td>
+            <td>codergobhi<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td><span class="loading loading-infinity loading-lg text-primary"></span></td>
+            <td><span class="loading loading-infinity loading-lg text-primary"></span></td>
+          </tr>
             {#each lb as userEntry, index}
       
             <tr class="text-md" class:active={userEntry['userId'] === $user?.uid}>
@@ -56,7 +75,7 @@
                 {/if} -->
               <td>{userEntry.username} 
               {#if userEntry.admin_tag === true}
-               <div class="badge badge-error badge-outline">ORGANIZER</div>
+               <div class="badge badge-error badge-outline ml-2">ORGANIZER</div>
               {/if}
               </td>
               <td>{userEntry.points}</td>

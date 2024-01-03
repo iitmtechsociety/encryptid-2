@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ()=>{
     } catch (e) {
         console.error(e);
         return json({
-            countdown_iso: "2024-01-01 09:30:00",
+            countdown_iso: "2024-01-04 00:42:00",
             questions_enabled: false,
             reg_enabled: false
         })

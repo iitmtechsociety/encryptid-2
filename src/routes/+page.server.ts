@@ -1,4 +1,5 @@
 import { adminDB, adminAuth } from '$lib/server/admin'
+import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ cookies }) => {
     console.log("Loading Layout Data");
@@ -22,13 +23,20 @@ export const load = async ({ cookies }) => {
         const userDoc = await adminDB.collection('users').doc(userId).get();
         console.log("User Doc Exist: " + userDoc.exists);
         if (userDoc.exists) {
+            const userData = userDoc.data();
+            if(userData.banned) {
+                return {
+                    userId: userId,
+                    registration_state: "banned"
+                }
+            };
             return {
                 userId: userId,
                 registration_state: "completed"
             };
         } else {
             return {
-                "userId": userId,
+                userId: userId,
                 registration_state: "username_not_set"
             };
         }
