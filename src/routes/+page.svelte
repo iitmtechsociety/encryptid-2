@@ -42,8 +42,9 @@
 		answer = e.target.value.trim();
 		e.target.value = answer;
 	};
-
+	let busy = false;
 	const submitAnswer = async () => {
+		busy = true;
 		if (answer.length === 0) {
 			sendErrorToast('Error', 'Please enter an answer');
 			return;
@@ -56,6 +57,7 @@
 			body: JSON.stringify({ answer })
 		});
 		const data = await r.json();
+		busy = false;
 		console.log(data);
 		if (data.result === 'passed') {
 			sendSuccessToast('Correct Answer', `Advancing to level ${data.nextLevel}`);
@@ -71,6 +73,7 @@
 		}else {
 			sendErrorToast('Wrong Answer', 'Please try again');
 		}
+		
 	};
 </script>
 {#if showConfetti}
@@ -221,7 +224,7 @@
 	<button
 		class="btn btn-secondary ml-2 mt-2"
 		on:click={submitAnswer}
-		disabled={answer.length === 0}
+		disabled={answer.length === 0 || busy}
 	>
 		Submit
 	</button>
