@@ -66,7 +66,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                     username: cleaned,
                     leaderboardPosition: lb.length + 1,
                     admin_tag: false,
-                    last_updated: FieldValue.serverTimestamp(),
+                    
                 }),
                 // last_updated: FieldValue.serverTimestamp(),
             });
