@@ -24,6 +24,28 @@ export const GET: RequestHandler = async ({ cookies }) => {
         const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie).catch((e) => { console.log(e); });
         const userId = decodedClaims.uid;
         if (userId === undefined) return redirect(306, '/registration');
+        if (!snapshotSetup) {
+            console.log('answers not loaded yet. loading....');
+           const docRef = await adminDB.collection('index').doc('levels');
+           const doc = await docRef.get();
+           const data = doc.data();
+           if (data !== undefined) {
+           answers = data.answers;
+               order = data.order;
+               completedUsers = data.completed;
+           }
+           snapshotSetup = true;
+           docRef.onSnapshot((doc) => {
+               console.log('answers snapshot');
+               const data = doc.data();
+               if (data !== undefined) {
+                   console.log('answers updated');
+                   answers = data.answers;
+                   order = data.order;
+                   completedUsers = data.completed;
+               }
+       });
+       }
         if (completedUsers.includes(userId)) return json({
             "result": "completed",
             "nextLevel": null
@@ -35,28 +57,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
             if (data === undefined) userToLevelMap.set(userId, 1);
             else userToLevelMap.set(userId, data.level ?? 1);
         }
-        if (!snapshotSetup) {
-             console.log('answers not loaded yet. loading....');
-            const docRef = await adminDB.collection('index').doc('levels');
-            const doc = await docRef.get();
-            const data = doc.data();
-            if (data !== undefined) {
-            answers = data.answers;
-                order = data.order;
-                completedUsers = data.completed;
-            }
-            snapshotSetup = true;
-            docRef.onSnapshot((doc) => {
-                console.log('answers snapshot');
-                const data = doc.data();
-                if (data !== undefined) {
-                    console.log('answers updated');
-                    answers = data.answers;
-                    order = data.order;
-                    completedUsers = data.completed;
-                }
-        });
-        }
+        
         const levelId = order[userToLevelMap.get(userId) - 1];
         if (questionDataMap.has(levelId)) {
             const levelData = questionDataMap.get(levelId);
