@@ -7,7 +7,7 @@ export const load = async ({ cookies }) => {
         userId: null,
         registration_state: "not_started"
     };
-    console.log("Session Cookie: " + session);
+    
     try {
         console.log("Verifying Session Cookie");
         const decodedClaims = await adminAuth.verifySessionCookie(session).catch((error) => { console.log(error); })

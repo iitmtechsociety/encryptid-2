@@ -36,6 +36,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             }
             const lbDoc = await t.get(adminDB.collection('index').doc('leaderboard'));
             const lb = lbDoc.data()!['leaderboard'];
+            
             t.set(userDocRef, {
                 userId: uid,
                 username: cleaned,
@@ -56,6 +57,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 "userCount": FieldValue.increment(1),
                 "usersByLevel.1": FieldValue.increment(1),
             });
+            
             t.update(adminDB.collection('index').doc('leaderboard'),{
                 leaderboard: FieldValue.arrayUnion({
                     level: 1,
@@ -68,6 +70,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 }),
                 // last_updated: FieldValue.serverTimestamp(),
             });
+            t.update(adminDB.collection('index').doc('leaderboard_task_queue'),{
+                'jobs': FieldValue.arrayUnion({
+                    userId: uid,
+                    newLevel: 1,
+                    newPoints: 0,
+                    timestamp: Date.now()            
+            })
+        });
 
         });
         

@@ -6,6 +6,10 @@
 	import { auth } from '$lib/firebase';
 	import { goto } from '$app/navigation';
 
+	if (data.registration_state === 'banned'){
+		goto('/');
+	}
+
 	async function signOutSSR() {
 		console.log('signing out');
 		await signOut(auth);

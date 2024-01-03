@@ -79,6 +79,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
         }
         
     } catch (e) {
+        console.log(e);
         throw error(500, 'Something Went Wrong');
     }
  };
@@ -146,16 +147,9 @@ export const POST: RequestHandler = async ({
         }
         // const levelId = order[level-1] ?? undefined;
         let expectedAnswer = answers[level-1] ?? undefined;
-        // for (let i = 0; i < answers.length; i++) { 
-        //     if (answers[i].id === levelId) {
-        //         expectedAnswer = answers[i].answer;
-        //         break;
-        //     }
-        // }
         if (expectedAnswer === undefined) {
             console.log("answer not found");
-            throw error(500, "Internal Server Error")
-            
+            throw error(500, "Internal Server Error")   
         }
         const { answer } = await request.json();
         if (answer === undefined) throw error(500, "Answer Required");
@@ -163,9 +157,13 @@ export const POST: RequestHandler = async ({
             console.log("correct answer");
             let didComplete = false;
             if (level === order.length) {
+            console.log("completed");
                 didComplete = true;
-            levelPassedWithCompletion = true;}
+                levelPassedWithCompletion = true;
+                }
             userToLevelMap.set(userId, level + 1);
+            console.log("level: " + level);
+            console.log("next level: " + (level+1));
             const log = {
                 "timestamp": Date.now(),
                 "type": didComplete ? "completed" : "pass",
@@ -184,6 +182,8 @@ export const POST: RequestHandler = async ({
                 t.update(userDocRef, {
                     "logs": FieldValue.arrayUnion(log),
                     "completed": true,
+                    "level": FieldValue.increment(1),
+                    "points": FieldValue.increment(100),
             });
             } else {
                 t.update(userDocRef, {
@@ -192,13 +192,26 @@ export const POST: RequestHandler = async ({
                 "points": FieldValue.increment(100),
             }); 
             }
+            if(didComplete){
+                completedUsers.push(userId);
+                t.update(adminDB.collection('index').doc('users'), {
+                    'completed': FieldValue.arrayUnion(userId),
+                });
+                t.update(adminDB.collection('index').doc('levels'), {
+                    'completed': FieldValue.arrayUnion(userId),
+                });
+            }
             t.update(adminDB.collection('index').doc('leaderboard_task_queue'),{
                 jobs: FieldValue.arrayUnion(leaderboardJobDef)
             });
             const metricsDocRef = adminDB.collection('index').doc('metrics');
             if (didComplete) {
+                const key1 = "usersByLevel." + (level + 1);
+                const key2 = "usersByLevel." + level;
                 t.update(metricsDocRef, {
-                    "completed": FieldValue.increment(1)
+                    "completed": FieldValue.increment(1),
+                    [key1]: FieldValue.increment(1),
+                    [key2]: FieldValue.increment(-1),
                 });
             } else {
                 const key1 = "usersByLevel." + (level + 1);

@@ -21,7 +21,12 @@ export const load = (async ({cookies}) => {
         const userDoc = await adminDB.collection('users').doc(userId).get();
         if (userDoc.exists) {
             const userData = userDoc.data();
-            if(userData.banned) return redirect(306,'/banned');
+            if(userData.banned){
+                return {
+                    userId: userId,
+                    registration_state: "banned",
+                }
+            }
             return {
                 userId: userId,
                 registration_state: "completed",

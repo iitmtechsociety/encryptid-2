@@ -4,6 +4,11 @@
 	//@ts-ignore
 	let innerWidth;
 	export let data;
+	import { Confetti } from "svelte-confetti"
+	let showConfetti = false;
+	let levelsCompleted = false;
+	
+
 	import { Download, MoveRight } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import Countdown from 'svelte-countdown/src/index.js';
@@ -14,17 +19,23 @@
 	let questionData = null;
 	let answer = '';
 	onMount(async () => {
+		
 		const src_hints = document.getElementById('pain');
 		const r = await fetch('/api/config');
-		const config = await r.json();
+		let config = {questions_enabled: false};
+		if(r.ok) config = await r.json();
 		showCountdown = !config.questions_enabled;
-		if(!showCountdown || data.registration_state !== "completed") return;
+		if(showCountdown || data.registration_state !== "completed") return;
 		const r2 = await fetch('/api/level');
 		questionData = await r2.json();
+		console.log(questionData);
 		if(questionData.result !== 'completed') {
 			if(questionData.code_comment !== undefined){
 				src_hints.appendChild(document.createComment(questionData.codeComment));
 			}
+		} else {
+			levelsCompleted = true;
+			showConfetti = true;
 		}
 	});
 
@@ -52,12 +63,31 @@
 			setTimeout(() => {
 				window.location.reload();
 			}, 3000);
-		} else {
+		} else if(data.result === 'completed') {
+			showConfetti = true;
+			sendSuccessToast('Congratulations', `You have completed the challenge!`);
+			setTimeout(() => {
+				window.location.reload();
+			}, 3000);
+		}else {
 			sendErrorToast('Wrong Answer', 'Please try again');
 		}
 	};
 </script>
-
+{#if showConfetti}
+<div style="
+ position: fixed;
+ top: -50px;
+ left: 0;
+ height: 100vh;
+ width: 100vw;
+ display: flex;
+ justify-content: center;
+ overflow: hidden;
+ pointer-events: none;">
+ <Confetti x={[-5, 5]} y={[0, 0.1]} delay={[500, 2000]} infinite duration=5000 amount=200 fallDistance="100vh" />
+</div>
+{/if}
 <svelte:window bind:innerWidth />
 {#if showCountdown}
 	<Countdown from={countDownTime} dateFormat="YYYY-MM-DD H:m:s" zone="Asia/Kolkata" let:remaining>
@@ -125,6 +155,11 @@
 			</div>
 		</div>
 	</Countdown>
+{:else if data.registration_state === "banned"}
+<center>
+    <span class="font-bold text-3xl">You Have Been</span><br/>
+    <span class="text-error text-9xl" style="font-family: 'Rubik Glitch' !important;">BANNED</span><br/>
+</center>
 {:else if questionData == null}
 	<span class="loading loading-bars loading-lg"></span>
 {:else if questionData['result'] === 'completed'}
@@ -139,7 +174,7 @@
 			View Leaderboard <MoveRight/>
 		</button>
 	</center>
-{:else}
+{:else}	
 	<span class="text-5xl font-bold">{questionData.title}</span>
 	<br /><br />
 	<span class="text-2xl"><i>{questionData.prompt}</i></span>

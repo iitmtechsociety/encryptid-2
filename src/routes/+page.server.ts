@@ -8,7 +8,7 @@ export const load = async ({ cookies }) => {
         userId: null,
         registration_state: "not_started"
     };
-    console.log("Session Cookie: " + session);
+    
     try {
         console.log("Verifying Session Cookie");
         const decodedClaims = await adminAuth.verifySessionCookie(session).catch((error) => { console.log(error); })
@@ -24,7 +24,12 @@ export const load = async ({ cookies }) => {
         console.log("User Doc Exist: " + userDoc.exists);
         if (userDoc.exists) {
             const userData = userDoc.data();
-            if(userData.banned) return redirect(306,'/banned');
+            if(userData.banned) {
+                return {
+                    userId: userId,
+                    registration_state: "banned"
+                }
+            };
             return {
                 userId: userId,
                 registration_state: "completed"
