@@ -44,17 +44,18 @@
         </thead>
         <tbody>
           <tr class="text-md">
-            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-warning"></span></td>
-            <td>kryo<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
-            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
-            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
-          </tr>
-          <tr class="text-md">
             <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-accent"></span></td>
             <td>namanprez<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
             <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
             <td><span class="loading loading-infinity loading-lg text-accent"></span></td>
           </tr>
+          <tr class="text-md">
+            <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td>kryo<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+            <td ><span class="loading loading-infinity loading-lg text-warning"></span></td>
+          </tr>
+          
           <tr class="text-md">
             <td class="flex max-w-fit"><span class="loading loading-infinity loading-lg text-primary"></span></td>
             <td>codergobhi<div class="badge badge-error badge-outline ml-2">ORGANIZER</div></td>
