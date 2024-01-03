@@ -42,7 +42,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                 username: cleaned,
                 email: decodedClaims.email,
                 points: 0,
-                leaderboardPosition: null,
+                leaderboardPosition: lb.length + 1,
                 banned: false,
                 accountCreated: FieldValue.serverTimestamp(),
                 level: 1,
@@ -64,9 +64,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
                     points: 0,
                     userId: uid,
                     username: cleaned,
-                    leaderboardPosition: lb.length + 1,
+                     leaderboardPosition: lb.length + 1,
                     admin_tag: false,
-                    
                 }),
                 // last_updated: FieldValue.serverTimestamp(),
             });
