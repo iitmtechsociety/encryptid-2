@@ -19,7 +19,6 @@
 	let questionData = null;
 	let answer = '';
 	onMount(async () => {
-		
 		const src_hints = document.getElementById('pain');
 		const r = await fetch('/api/config');
 		let config = {questions_enabled: false};
@@ -30,7 +29,7 @@
 		questionData = await r2.json();
 		console.log(questionData);
 		if(questionData.result !== 'completed') {
-			if(questionData.code_comment !== undefined){
+			if(questionData.codeComment !== undefined && questionData.codeComment !== null && questionData.codeComment.length > 0){
 				src_hints.appendChild(document.createComment(questionData.codeComment));
 			}
 		} else {
