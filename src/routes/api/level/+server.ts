@@ -50,34 +50,18 @@ export const GET: RequestHandler = async ({ cookies }) => {
             "result": "completed",
             "nextLevel": null
         });
-        if (!userToLevelMap.has(userId)) {
-            const docRef = await adminDB.collection('users').doc(userId);
-            const doc = await docRef.get();
-            const data = doc.data();
-            if (data === undefined) userToLevelMap.set(userId, 1);
-            else userToLevelMap.set(userId, data.level ?? 1);
-        }
-        
-        const levelId = order[userToLevelMap.get(userId) - 1];
-        if (questionDataMap.has(levelId)) {
-            const levelData = questionDataMap.get(levelId);
-            delete levelData.answer;
-            return json(levelData);
-        } else {
-            const docRef = await adminDB.collection('levels').doc(levelId);
-            const doc = await docRef.get();
-            const data = doc.data();
-            if (data === undefined) throw error(500, 'Internal Server Error');
-            questionDataMap.set(levelId, data);
-            adminDB.collection('levels').doc(levelId).onSnapshot((doc) => {
-                const data = doc.data();
-                if (data !== undefined) {
-                    questionDataMap.set(levelId, data);
-                }
-            });
-            delete data.answer;
-            return json(data);
-        }
+
+        const docRef = adminDB.collection('users').doc(userId);
+        const doc = await docRef.get();
+        const data = doc.data();
+        const levelId = order[data.level - 1];
+
+        const docRef2 = await adminDB.collection('levels').doc(levelId);
+        const doc2 = await docRef2.get();
+        const data2 = doc2.data();
+
+        delete data2.answer;
+        return json(data2);
         
     } catch (e) {
         console.log(e);
@@ -93,6 +77,8 @@ export const POST: RequestHandler = async ({
     //     "result": "sus"
     // });
     console.log('POST /api/level');
+    let nextLevel = null;
+
     if (!snapshotSetup) {
         console.log('answers not loaded yet. loading....');
         const docRef = await adminDB.collection('index').doc('levels');
@@ -100,6 +86,7 @@ export const POST: RequestHandler = async ({
         const data = doc.data();
         answers = data.answers;
         order = data.order;
+        completedUsers = data.completed;
         snapshotSetup = true;
         docRef.onSnapshot((doc) => {
             console.log('answers snapshot');
@@ -109,6 +96,7 @@ export const POST: RequestHandler = async ({
                 console.log('answers updated');
                 answers = data.answers;
                 order = data.order;
+                completedUsers = data.completed;
             }
         }
         );
@@ -134,37 +122,34 @@ export const POST: RequestHandler = async ({
     let levelPassed = false;
     let levelPassedWithCompletion = false;
     await adminDB.runTransaction(async (t) => { 
-        const userDocRef = adminDB.collection('users').doc(userId);
-        let level: number = -1;
-        if (userToLevelMap.has(userId)) { 
-            level = userToLevelMap.get(userId);
-        } else {
-            const userDoc = await t.get(userDocRef);
-            if (!userDoc.exists) throw error(401, 'Unauthorized');
-            const userData = userDoc.data();
-            const userLevel = userData.level;
-            level = userLevel;
-            userToLevelMap.set(userId, userLevel);
-        }
-        // const levelId = order[level-1] ?? undefined;
+        console.log("transaction started");
+        const userDocRef = await adminDB.collection('users').doc(userId).get();
+        let level: number = 1;
+        const userData = userDocRef.data();
+        // console.log(userData);
+        if (!userDocRef.exists) throw error(401, 'Unauthorized');
+        
+        level = userData.level;
         let expectedAnswer = answers[level-1] ?? undefined;
         if (expectedAnswer === undefined) {
             console.log("answer not found");
             throw error(500, "Internal Server Error")   
         }
         const { answer } = await request.json();
+        console.log("answer: " + answer);
         if (answer === undefined) throw error(500, "Answer Required");
+        console.log("expected answer: " + expectedAnswer);
         if (cleanAnswer(answer) === cleanAnswer(expectedAnswer)) { 
             console.log("correct answer");
             let didComplete = false;
             if (level === order.length) {
-            console.log("completed");
+                console.log("completed");
                 didComplete = true;
                 levelPassedWithCompletion = true;
-                }
-            userToLevelMap.set(userId, level + 1);
+            }
             console.log("level: " + level);
             console.log("next level: " + (level+1));
+            nextLevel = level+1;
             const log = {
                 "timestamp": Date.now(),
                 "type": didComplete ? "completed" : "pass",
@@ -180,14 +165,14 @@ export const POST: RequestHandler = async ({
                 userId,
             };
             if (didComplete) {
-                t.update(userDocRef, {
+                t.update(adminDB.collection('users').doc(userId), {
                     "logs": FieldValue.arrayUnion(log),
                     "completed": true,
                     "level": FieldValue.increment(1),
                     "points": FieldValue.increment(100),
             });
             } else {
-                t.update(userDocRef, {
+                t.update(adminDB.collection('users').doc(userId), {
                 "logs": FieldValue.arrayUnion(log),
                 "level": FieldValue.increment(1),
                 "points": FieldValue.increment(100),
@@ -223,7 +208,6 @@ export const POST: RequestHandler = async ({
                 });
             }
             levelPassed = true;
-             
         } else {
             console.log("wrong answer");
              const log = {
@@ -237,7 +221,6 @@ export const POST: RequestHandler = async ({
             t.update(userDocRef, {
                 "logs": FieldValue.arrayUnion(log)
             });
-
         } 
     });
     console.log("transaction complete");
@@ -245,12 +228,12 @@ export const POST: RequestHandler = async ({
         if (levelPassedWithCompletion) {
             return json({
                 "result": "completed",
-                "nextLevel": null
+                "nextLevel": nextLevel
             });
         } else {
             return json({
             "result": "passed",
-            "nextLevel": userToLevelMap.get(userId)
+            "nextLevel": nextLevel
         });
         }
 
