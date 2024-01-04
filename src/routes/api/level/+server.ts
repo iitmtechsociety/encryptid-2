@@ -168,14 +168,14 @@ export const POST: RequestHandler = async ({
                 t.update(adminDB.collection('users').doc(userId), {
                     "logs": FieldValue.arrayUnion(log),
                     "completed": true,
-                    "level": FieldValue.increment(1),
-                    "points": FieldValue.increment(100),
+                    "level":  level+1,
+                    "points": level*100,
             });
             } else {
                 t.update(adminDB.collection('users').doc(userId), {
                 "logs": FieldValue.arrayUnion(log),
-                "level": FieldValue.increment(1),
-                "points": FieldValue.increment(100),
+                "level": level+1,
+                "points": level*100,
             }); 
             }
             if(didComplete){
@@ -218,7 +218,7 @@ export const POST: RequestHandler = async ({
                 "expectedAnswer": expectedAnswer,
                 "submittedAnswer":answer,
              }
-            t.update(userDocRef, {
+            t.update(adminDB.collection('users').doc(userId), {
                 "logs": FieldValue.arrayUnion(log)
             });
         } 
